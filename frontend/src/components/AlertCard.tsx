@@ -1,5 +1,5 @@
 import { Alert } from '../types';
-import { statusConfig, severityConfig, formatRelativeTime } from '../utils';
+import { statusConfig, formatRelativeTime } from '../utils';
 import { Clock, User, Activity } from 'lucide-react';
 
 interface Props {
@@ -9,7 +9,6 @@ interface Props {
 
 export default function AlertCard({ alert, onClick }: Props) {
   const status = statusConfig[alert.status];
-  const severity = severityConfig[alert.severity];
 
   return (
     <div
@@ -29,11 +28,6 @@ export default function AlertCard({ alert, onClick }: Props) {
             <h3 className="text-sm font-semibold text-white truncate group-hover:text-signal-orange transition-colors">
               {alert.title}
             </h3>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className={`badge ${severity.badge} text-xs py-0.5`}>
-                {severity.icon} {severity.label}
-              </span>
-            </div>
           </div>
 
           {alert.description && (

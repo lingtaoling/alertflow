@@ -1,5 +1,4 @@
 export type AlertStatus = 'NEW' | 'ACKNOWLEDGED' | 'RESOLVED';
-export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface Organization {
   id: string;
@@ -21,7 +20,6 @@ export interface Alert {
   id: string;
   title: string;
   description?: string;
-  severity: Severity;
   status: AlertStatus;
   orgId: string;
   createdById: string;

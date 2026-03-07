@@ -1,4 +1,4 @@
-import { AlertStatus, Severity } from '../types';
+import { AlertStatus } from '../types';
 
 export const statusConfig: Record<AlertStatus, { label: string; color: string; dot: string; badge: string }> = {
   NEW: {
@@ -19,13 +19,6 @@ export const statusConfig: Record<AlertStatus, { label: string; color: string; d
     dot: 'bg-signal-green',
     badge: 'bg-green-500/15 text-signal-green border border-signal-green/30',
   },
-};
-
-export const severityConfig: Record<Severity, { label: string; badge: string; icon: string }> = {
-  LOW: { label: 'Low', badge: 'bg-ink-200 text-ink-600 border border-ink-300', icon: '▽' },
-  MEDIUM: { label: 'Medium', badge: 'bg-orange-500/10 text-signal-orange border border-signal-orange/20', icon: '◇' },
-  HIGH: { label: 'High', badge: 'bg-amber-500/10 text-signal-amber border border-signal-amber/20', icon: '△' },
-  CRITICAL: { label: 'Critical', badge: 'bg-red-500/15 text-signal-red border border-signal-red/30', icon: '▲' },
 };
 
 export const nextStatus: Record<AlertStatus, AlertStatus | null> = {

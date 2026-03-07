@@ -149,7 +149,7 @@ curl -X POST http://localhost:3000/alerts \
   -H "Content-Type: application/json" \
   -H "X-Org-Id: org-uuid" \
   -H "X-User-Id: user-uuid" \
-  -d '{"title": "DB CPU spike", "severity": "HIGH"}'
+  -d '{"title": "DB CPU spike", "description": "Optional context"}'
 
 # 4. List alerts
 curl http://localhost:3000/alerts?status=NEW&limit=10&offset=0 \
@@ -254,7 +254,7 @@ alerts-app/
 organizations (id, name, created_at, updated_at)
 users         (id, email, name, org_id → organizations, ...)
               INDEX: (org_id)
-alerts        (id, title, description, severity, status, org_id, created_by_id, ...)
+alerts        (id, title, description, status, org_id, created_by_id, ...)
               INDEX: (org_id)          -- for list queries
               INDEX: (org_id, status)  -- for filtered list queries
               INDEX: (org_id, created_at DESC) -- for ordered list

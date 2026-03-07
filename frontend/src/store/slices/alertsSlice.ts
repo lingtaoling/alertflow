@@ -47,7 +47,7 @@ export const fetchAlerts = createAsyncThunk(
 
 export const createAlert = createAsyncThunk(
   'alerts/createAlert',
-  async (data: { title: string; description?: string; severity?: any }, { rejectWithValue }) => {
+  async (data: { title: string; description?: string }, { rejectWithValue }) => {
     try {
       return await alertsApi.create(data);
     } catch (e: any) {

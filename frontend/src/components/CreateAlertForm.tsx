@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { createAlert, fetchAlerts } from '../store/slices/alertsSlice';
-import { Severity } from '../types';
-import { severityConfig } from '../utils';
 import { X, Plus, AlertTriangle, Zap } from 'lucide-react';
 
 interface Props {
@@ -15,7 +13,6 @@ export default function CreateAlertForm({ onClose }: Props) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [severity, setSeverity] = useState<Severity>('MEDIUM');
   const [localError, setLocalError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +20,10 @@ export default function CreateAlertForm({ onClose }: Props) {
     if (!title.trim()) return;
     setLocalError('');
 
-    const result = await dispatch(createAlert({ title: title.trim(), description: description.trim() || undefined, severity }));
+    const result = await dispatch(createAlert({
+      title: title.trim(),
+      description: description.trim() || undefined,
+    }));
     if (createAlert.fulfilled.match(result)) {
       dispatch(fetchAlerts({ status: filterStatus || undefined, limit, offset }));
       onClose();
@@ -31,8 +31,6 @@ export default function CreateAlertForm({ onClose }: Props) {
       setLocalError(result.payload as string);
     }
   }
-
-  const severities: Severity[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -78,31 +76,6 @@ export default function CreateAlertForm({ onClose }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               maxLength={2000}
             />
-          </div>
-
-          {/* Severity */}
-          <div>
-            <label className="label">Severity</label>
-            <div className="grid grid-cols-4 gap-2">
-              {severities.map((s) => {
-                const cfg = severityConfig[s];
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSeverity(s)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                      severity === s
-                        ? cfg.badge + ' scale-105 shadow-lg'
-                        : 'bg-ink-50 border-ink-200 text-ink-600 hover:border-ink-300'
-                    }`}
-                  >
-                    <span>{cfg.icon}</span>
-                    {cfg.label}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Error */}

@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { Alert, AlertEvent, AlertStatus, Organization, User, PaginatedResult, Severity } from '../types';
+import { Alert, AlertEvent, AlertStatus, Organization, User, PaginatedResult } from '../types';
 
 // Auth
 export const authApi = {
@@ -27,7 +27,7 @@ export const usersApi = {
 
 // Alerts
 export const alertsApi = {
-  create: (data: { title: string; description?: string; severity?: Severity }) =>
+  create: (data: { title: string; description?: string }) =>
     apiClient.post<Alert>('/alerts', data).then((r) => r.data),
 
   list: (params?: { status?: AlertStatus; limit?: number; offset?: number }) =>

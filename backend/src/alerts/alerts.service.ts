@@ -31,7 +31,7 @@ export class AlertsService {
     this.logger.log(`Creating alert "${dto.title}" in org ${orgId} by user ${userId}`);
 
     const alert = await this.prisma.$transaction(async (tx) => {
-      // Create the alert
+      // Create the alert (status defaults to NEW in DB)
       const newAlert = await tx.alert.create({
         data: {
           title: dto.title,

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAlertEvents, updateAlertStatus, clearSelected } from '../store/slices/alertsSlice';
 import { Alert, AlertStatus } from '../types';
-import { statusConfig, severityConfig, nextStatus, nextStatusLabel, formatDateTime, formatRelativeTime } from '../utils';
+import { statusConfig, nextStatus, nextStatusLabel, formatDateTime, formatRelativeTime } from '../utils';
 import { X, Clock, User, ArrowRight, CheckCircle2, Loader2, AlertTriangle, Activity } from 'lucide-react';
 
 interface Props {
@@ -29,7 +29,6 @@ export default function AlertDetailModal({ alert }: Props) {
   }
 
   const statusCfg = statusConfig[alert.status];
-  const severityCfg = severityConfig[alert.severity];
   const next = nextStatus[alert.status];
 
   const eventStatusColors: Record<AlertStatus, string> = {
@@ -50,9 +49,6 @@ export default function AlertDetailModal({ alert }: Props) {
               <span className={`badge ${statusCfg.badge}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
                 {statusCfg.label}
-              </span>
-              <span className={`badge ${severityCfg.badge}`}>
-                {severityCfg.icon} {severityCfg.label}
               </span>
             </div>
             <h2 className="text-lg font-semibold text-ink-700 leading-tight">{alert.title}</h2>
