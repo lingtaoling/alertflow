@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'AppFont';
+  src: url('./assets/fonts/de42cfb9a3b980ae-s.p.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LogoFont';
+  src: url('./assets/fonts/af4bf8399d1aacdf-s.p.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -9,6 +25,7 @@
   
   html {
     scroll-behavior: smooth;
+    font-size: 18px;
   }
 
   body {
@@ -30,37 +47,37 @@
   }
 
   .btn-primary {
-    @apply bg-signal-orange text-white font-medium px-4 py-2 rounded-lg 
+    @apply bg-signal-orange text-white font-medium px-4 py-2.5 rounded-lg 
            hover:bg-signal-orange-dark transition-all duration-150 
            disabled:opacity-40 disabled:cursor-not-allowed
-           flex items-center gap-2 text-sm;
+           flex items-center gap-2 text-base;
   }
 
   .btn-secondary {
-    @apply bg-white border border-ink-300 text-ink-700 font-medium px-4 py-2 rounded-lg 
+    @apply bg-white border border-ink-300 text-ink-700 font-medium px-4 py-2.5 rounded-lg 
            hover:bg-ink-50 hover:border-ink-400 transition-all duration-150
-           flex items-center gap-2 text-sm;
+           flex items-center gap-2 text-base;
   }
 
   .btn-ghost {
     @apply text-ink-600 font-medium px-3 py-1.5 rounded-lg 
            hover:bg-ink-100 hover:text-ink-800 transition-all duration-150
-           flex items-center gap-1.5 text-sm;
+           flex items-center gap-1.5 text-base;
   }
 
   .input {
-    @apply w-full bg-white border border-ink-300 rounded-lg px-3 py-2.5 text-ink-700
-           placeholder:text-ink-400 text-sm
+    @apply w-full bg-white border border-ink-300 rounded-lg px-3.5 py-3 text-ink-700
+           placeholder:text-ink-400 text-base
            focus:outline-none focus:border-signal-orange/60 focus:ring-1 focus:ring-signal-orange/30
            transition-all duration-150;
   }
 
   .label {
-    @apply block text-xs font-medium text-ink-600 mb-1.5 uppercase tracking-wider;
+    @apply block text-sm font-medium text-ink-600 mb-1.5 uppercase tracking-wider;
   }
 
   .badge {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-semibold;
   }
 }
 

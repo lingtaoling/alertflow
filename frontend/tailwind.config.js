@@ -4,9 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Sora', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['AppFont', 'Sora', 'system-ui', 'sans-serif'],
+        mono: ['AppFont', 'JetBrains Mono', 'monospace'],
+        display: ['AppFont', 'Space Grotesk', 'sans-serif'],
+        logo: ['LogoFont', 'AppFont', 'sans-serif'],
       },
       colors: {
         ink: {

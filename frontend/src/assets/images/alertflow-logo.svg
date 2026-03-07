@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <linearGradient id="bellGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD166"/>
+      <stop offset="50%" stop-color="#F4A428"/>
+      <stop offset="100%" stop-color="#E07B00"/>
+    </linearGradient>
+    <linearGradient id="shineGrad" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5CC" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FFD166" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-10%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#C46200" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Outer pulse rings -->
+  <circle cx="100" cy="92" fill="none" stroke="#F4A428" stroke-width="1.5" opacity="0">
+    <animate attributeName="r" values="28;46;28" dur="2.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.25;0" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="92" fill="none" stroke="#FFD166" stroke-width="1" opacity="0">
+    <animate attributeName="r" values="28;42;28" dur="2.6s" repeatCount="indefinite" begin="1.3s"/>
+    <animate attributeName="opacity" values="0;0.18;0" dur="2.6s" repeatCount="indefinite" begin="1.3s"/>
+  </circle>
+
+  <!-- Sound wave arcs LEFT -->
+  <g opacity="0.75">
+    <path d="M83 82 Q76 90 83 98" stroke="#F4A428" stroke-width="2.5" stroke-linecap="round" fill="none">
+      <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="d" values="M83 82 Q76 90 83 98; M80 79 Q72 90 80 101; M83 82 Q76 90 83 98" dur="1.4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M77 76 Q66 90 77 104" stroke="#F4A428" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;0.15;0.6" dur="1.4s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="d" values="M77 76 Q66 90 77 104; M73 72 Q60 90 73 108; M77 76 Q66 90 77 104" dur="1.4s" repeatCount="indefinite" begin="0.15s"/>
+    </path>
+  </g>
+
+  <!-- Sound wave arcs RIGHT -->
+  <g opacity="0.75">
+    <path d="M117 82 Q124 90 117 98" stroke="#F4A428" stroke-width="2.5" stroke-linecap="round" fill="none">
+      <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="d" values="M117 82 Q124 90 117 98; M120 79 Q128 90 120 101; M117 82 Q124 90 117 98" dur="1.4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M123 76 Q134 90 123 104" stroke="#F4A428" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;0.15;0.6" dur="1.4s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="d" values="M123 76 Q134 90 123 104; M127 72 Q140 90 127 108; M123 76 Q134 90 123 104" dur="1.4s" repeatCount="indefinite" begin="0.15s"/>
+    </path>
+  </g>
+
+  <!-- Bell scaled to 0.4x -->
+  <g filter="url(#shadow)" transform="translate(100,92) scale(0.2) translate(-100,-92)">
+    <path d="M100 38 C78 38 60 54 60 76 L60 95 L48 108 L152 108 L140 95 L140 76 C140 54 122 38 100 38 Z" fill="url(#bellGrad)">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 92; 6 100 92; -6 100 92; 4 100 92; -4 100 92; 0 100 92"
+        dur="1.4s" repeatCount="indefinite" calcMode="spline"
+        keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+    </path>
+    <ellipse cx="86" cy="62" rx="14" ry="9" fill="url(#shineGrad)" transform="rotate(-25 86 62)">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 92; 6 100 92; -6 100 92; 4 100 92; -4 100 92; 0 100 92"
+        dur="1.4s" repeatCount="indefinite" calcMode="spline"
+        keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+    </ellipse>
+    <rect x="46" y="106" width="108" height="8" rx="4" fill="#E07B00">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 92; 6 100 92; -6 100 92; 4 100 92; -4 100 92; 0 100 92"
+        dur="1.4s" repeatCount="indefinite" calcMode="spline"
+        keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+    </rect>
+    <circle cx="100" cy="120" r="7" fill="#E07B00">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 92; 6 100 92; -6 100 92; 4 100 92; -4 100 92; 0 100 92"
+        dur="1.4s" repeatCount="indefinite" calcMode="spline"
+        keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+    </circle>
+    <path d="M93 38 Q100 28 107 38" stroke="#E07B00" stroke-width="5" stroke-linecap="round" fill="none">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 92; 6 100 92; -6 100 92; 4 100 92; -4 100 92; 0 100 92"
+        dur="1.4s" repeatCount="indefinite" calcMode="spline"
+        keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+    </path>
+  </g>
+
+
+</svg>
