@@ -1,5 +1,6 @@
-import { Alert } from '../types';
-import { statusConfig, formatRelativeTime } from '../utils';
+import { Alert } from '../../../types';
+import { statusConfig } from '../../../utils/alertStatus';
+import { formatRelativeTime } from '../../../utils/format';
 import { Clock, User, Activity } from 'lucide-react';
 
 interface Props {
@@ -19,10 +20,7 @@ export default function AlertCard({ alert, onClick }: Props) {
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       <div className="flex items-start gap-3">
-        {/* Status indicator */}
         <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${status.dot} ${alert.status === 'NEW' ? 'animate-pulse-slow' : ''}`} />
-
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3
@@ -37,15 +35,11 @@ export default function AlertCard({ alert, onClick }: Props) {
               {alert.title}
             </h3>
           </div>
-
           {alert.description && (
             <p className="text-ink-400 text-xs mb-2 line-clamp-2">{alert.description}</p>
           )}
-
           <div className="flex items-center gap-3 text-xs text-ink-500 flex-wrap">
-            <span className={`badge ${status.badge} py-0.5`}>
-              {status.label}
-            </span>
+            <span className={`badge ${status.badge} py-0.5`}>{status.label}</span>
             {alert.createdBy && (
               <span className="flex items-center gap-1">
                 <User size={10} /> {alert.createdBy.name}

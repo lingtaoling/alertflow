@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { orgsApi } from "../api";
-import ModalForm from "./ModalForm";
-import FormField from "./FormField";
-import { Building2, Zap } from "lucide-react";
+import { useState } from 'react';
+import { orgsApi } from '../../../services/organizations.service';
+import ModalForm from '../../../components/ui/ModalForm';
+import FormField from '../../../components/ui/FormField';
+import { Building2, Zap } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
@@ -10,16 +10,15 @@ interface Props {
 }
 
 export default function CreateOrgForm({ onClose, onSuccess }: Props) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    setError("");
+    setError('');
     setLoading(true);
-
     try {
       await orgsApi.create(name.trim());
       onSuccess?.();
@@ -44,16 +43,7 @@ export default function CreateOrgForm({ onClose, onSuccess }: Props) {
       onSubmit={handleSubmit}
       submitIcon={<Zap size={14} />}
     >
-      <FormField
-        name="name"
-        label="Organization name"
-        type="text"
-        required
-        placeholder="e.g. Acme Corp"
-        value={name}
-        onChange={setName}
-        autoFocus
-      />
+      <FormField name="name" label="Organization name" type="text" required placeholder="e.g. Acme Corp" value={name} onChange={setName} autoFocus />
     </ModalForm>
   );
 }

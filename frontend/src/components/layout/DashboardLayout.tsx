@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { clearSession } from '../store/slices/authSlice';
-import { NAV_ITEMS } from '../config/nav';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { clearSession } from '../../store/slices/authSlice';
+import { NAV_ITEMS } from './nav.config';
 import { Zap, Building2, User, Shield, LogOut } from 'lucide-react';
 
 export default function DashboardLayout() {
@@ -19,7 +19,6 @@ export default function DashboardLayout() {
       <header className="border-b border-ink-200 bg-white/95 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4">
           <div className="h-14 flex items-center justify-between gap-4">
-            {/* Logo */}
             <NavLink to="/alerts" className="flex items-center gap-2 shrink-0">
               <div className="w-7 h-7 rounded-lg bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center">
                 <Zap size={14} className="text-signal-orange" />
@@ -27,7 +26,6 @@ export default function DashboardLayout() {
               <span className="font-display font-bold text-ink-700 text-sm tracking-tight">AlertFlow</span>
             </NavLink>
 
-            {/* Nav links */}
             <nav className="flex items-center gap-1 flex-1 justify-center">
               {NAV_ITEMS.map((item) => (
                 <NavLink
@@ -47,7 +45,6 @@ export default function DashboardLayout() {
               ))}
             </nav>
 
-            {/* Tenant context + actions */}
             <div className="flex items-center gap-2 shrink-0">
               <div className="hidden sm:flex items-center gap-1.5 bg-ink-100 border border-ink-200 rounded-full px-3 py-1 text-xs">
                 <Shield size={11} className="text-signal-orange" />

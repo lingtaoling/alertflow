@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAppSelector } from './store/hooks';
-import LoginPage from './pages/LoginPage';
-import SetupPage from './pages/SetupPage';
-import DashboardLayout from './layouts/DashboardLayout';
-import AlertsPage from './pages/AlertsPage';
-import UsersPage from './pages/UsersPage';
-import OrganizationsPage from './pages/OrganizationsPage';
+import { useAppSelector } from '../store/hooks';
+import DashboardLayout from '../components/layout/DashboardLayout';
+import LoginPage from '../pages/login';
+import SetupPage from '../pages/setup';
+import AlertsPage from '../pages/alerts';
+import UsersPage from '../pages/users';
+import OrganizationsPage from '../pages/organizations';
 
-export default function App() {
+export default function Router() {
   const { accessToken, orgId } = useAppSelector((s) => s.auth);
   const isAuthenticated = Boolean(accessToken);
   const defaultRoute = orgId ? '/alerts' : '/organizations';

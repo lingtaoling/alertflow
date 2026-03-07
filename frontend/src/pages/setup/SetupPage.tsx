@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useAppDispatch } from '../store/hooks';
-import { setSession } from '../store/slices/authSlice';
-import { orgsApi, usersApi, authApi } from '../api';
-import { Organization, User } from '../types';
+import { useAppDispatch } from '../../store/hooks';
+import { setSession } from '../../store/slices/authSlice';
+import { authApi } from '../../services/auth.service';
+import { orgsApi } from '../../services/organizations.service';
+import { usersApi } from '../../services/users.service';
+import { Organization } from '../../types';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Building2, UserPlus, ChevronRight, Zap } from 'lucide-react';
 
@@ -40,12 +42,7 @@ export default function SetupPage() {
     setLoading(true);
     setError('');
     try {
-      await usersApi.create({
-        name: userName.trim(),
-        email: userEmail.trim(),
-        orgId: org.id,
-        password: userPassword,
-      });
+      await usersApi.create({ name: userName.trim(), email: userEmail.trim(), orgId: org.id, password: userPassword });
       const { accessToken, user, org: orgData } = await authApi.login(userEmail.trim(), userPassword);
       dispatch(setSession({ accessToken, org: orgData, user }));
     } catch (e: any) {
@@ -58,7 +55,6 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="w-10 h-10 rounded-xl bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center">
@@ -69,15 +65,14 @@ export default function SetupPage() {
           <p className="text-ink-600 text-sm">Multi-tenant alert workflow management</p>
         </div>
 
-        {/* Step indicator */}
         <div className="flex items-center justify-center gap-3 mb-8">
           {[{ id: 'org', label: 'Organization', icon: Building2 }, { id: 'user', label: 'User', icon: UserPlus }].map((s, i) => (
             <div key={s.id} className="flex items-center gap-2">
               {i > 0 && <ChevronRight size={14} className="text-ink-600" />}
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                step === s.id 
-                  ? 'bg-signal-orange/20 text-signal-orange border border-signal-orange/40' 
-                  : s.id === 'user' && step === 'org' 
+                step === s.id
+                  ? 'bg-signal-orange/20 text-signal-orange border border-signal-orange/40'
+                  : s.id === 'user' && step === 'org'
                     ? 'text-ink-500 border border-ink-300'
                     : 'text-signal-green border border-signal-green/30 bg-signal-green/10'
               }`}>
@@ -88,7 +83,6 @@ export default function SetupPage() {
           ))}
         </div>
 
-        {/* Card */}
         <div className="gradient-border rounded-2xl p-6 bg-white">
           {step === 'org' ? (
             <form onSubmit={handleCreateOrg} className="space-y-5">
@@ -98,13 +92,7 @@ export default function SetupPage() {
               </div>
               <div>
                 <label className="label">Organization name</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Acme Corp"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                  autoFocus
-                />
+                <input className="input" placeholder="e.g. Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} autoFocus />
               </div>
               {error && (
                 <div className="flex items-center gap-2 text-signal-red text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
@@ -112,8 +100,7 @@ export default function SetupPage() {
                 </div>
               )}
               <button type="submit" className="btn-primary w-full justify-center" disabled={loading || !orgName.trim()}>
-                {loading ? 'Creating...' : 'Create Organization'}
-                <ChevronRight size={14} />
+                {loading ? 'Creating...' : 'Create Organization'}<ChevronRight size={14} />
               </button>
             </form>
           ) : (
@@ -138,14 +125,7 @@ export default function SetupPage() {
                 </div>
                 <div>
                   <label className="label">Password</label>
-                  <input
-                    className="input"
-                    type="password"
-                    placeholder="Min 8 characters"
-                    value={userPassword}
-                    onChange={(e) => setUserPassword(e.target.value)}
-                    minLength={8}
-                  />
+                  <input className="input" type="password" placeholder="Min 8 characters" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} minLength={8} />
                 </div>
               </div>
               {error && (
@@ -154,12 +134,9 @@ export default function SetupPage() {
                 </div>
               )}
               <div className="flex gap-2">
-                <button type="button" className="btn-secondary" onClick={() => { setStep('org'); setError(''); }}>
-                  Back
-                </button>
+                <button type="button" className="btn-secondary" onClick={() => { setStep('org'); setError(''); }}>Back</button>
                 <button type="submit" className="btn-primary flex-1 justify-center" disabled={loading || !userName.trim() || !userEmail.trim() || userPassword.length < 8}>
-                  {loading ? 'Creating...' : 'Enter Dashboard'}
-                  <ChevronRight size={14} />
+                  {loading ? 'Creating...' : 'Enter Dashboard'}<ChevronRight size={14} />
                 </button>
               </div>
             </form>
@@ -168,9 +145,7 @@ export default function SetupPage() {
 
         <p className="text-center text-ink-500 text-sm mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-signal-orange font-medium hover:underline">
-            Sign in
-          </Link>
+          <Link to="/login" className="text-signal-orange font-medium hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

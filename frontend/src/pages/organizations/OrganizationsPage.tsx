@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { orgsApi } from '../api';
-import { Organization } from '../types';
-import CreateOrgForm from '../components/CreateOrgForm';
+import { orgsApi } from '../../services/organizations.service';
+import { Organization } from '../../types';
+import CreateOrgForm from './components/CreateOrgForm';
 import { Building2, Loader2, Plus, RefreshCw, Shield } from 'lucide-react';
 
 export default function OrganizationsPage() {
@@ -13,11 +13,7 @@ export default function OrganizationsPage() {
   function load() {
     setLoading(true);
     setError('');
-    orgsApi
-      .list()
-      .then(setOrgs)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+    orgsApi.list().then(setOrgs).catch((e) => setError(e.message)).finally(() => setLoading(false));
   }
 
   useEffect(() => { load(); }, []);
@@ -83,9 +79,7 @@ export default function OrganizationsPage() {
         </div>
       )}
 
-      {showCreateForm && (
-        <CreateOrgForm onClose={() => setShowCreateForm(false)} onSuccess={load} />
-      )}
+      {showCreateForm && <CreateOrgForm onClose={() => setShowCreateForm(false)} onSuccess={load} />}
     </div>
   );
 }

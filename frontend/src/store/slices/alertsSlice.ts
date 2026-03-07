@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Alert, AlertEvent, AlertStatus, PaginatedResult } from '../../types';
-import { alertsApi } from '../../api';
+import { alertsApi } from '../../services/alerts.service';
 
 interface AlertsState {
   items: Alert[];
