@@ -68,7 +68,7 @@ export default function AlertsPage() {
       {/* Tenant info banner */}
       <div className="mb-6 card p-3 flex items-center gap-3 text-xs text-ink-600">
         <Shield size={13} className="text-signal-orange shrink-0" />
-        <span>Tenant isolation active — all queries are scoped to org <span className="font-mono text-ink-700">{orgId?.slice(0, 8)}...</span> via <span className="font-mono text-signal-orange">X-Org-Id</span> header</span>
+        <span>Tenant isolation active — all queries are scoped to org <span className="font-mono text-ink-700">{orgId?.slice(0, 8)}...</span> via <span className="font-mono text-signal-orange">JWT</span></span>
       </div>
 
       {/* Stats row */}

@@ -4,7 +4,9 @@ import { Alert, AlertEvent, AlertStatus, Organization, User, PaginatedResult } f
 // Auth
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post<{ user: User; org: Organization }>('/auth/login', { email, password }).then((r) => r.data),
+    apiClient
+      .post<{ accessToken: string; user: User; org: Organization }>('/auth/login', { email, password })
+      .then((r) => r.data),
 };
 
 // Organizations

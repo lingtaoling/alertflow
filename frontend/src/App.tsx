@@ -8,8 +8,8 @@ import UsersPage from './pages/UsersPage';
 import OrganizationsPage from './pages/OrganizationsPage';
 
 export default function App() {
-  const { orgId, userId } = useAppSelector((s) => s.auth);
-  const isAuthenticated = Boolean(orgId && userId);
+  const { accessToken } = useAppSelector((s) => s.auth);
+  const isAuthenticated = Boolean(accessToken);
 
   if (isAuthenticated) {
     return (

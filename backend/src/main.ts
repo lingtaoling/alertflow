@@ -45,8 +45,7 @@ async function bootstrap() {
     .setTitle('Alerts & Workflow API')
     .setDescription('Multi-tenant alert management system')
     .setVersion('1.0')
-    .addApiKey({ type: 'apiKey', name: 'X-Org-Id', in: 'header' }, 'X-Org-Id')
-    .addApiKey({ type: 'apiKey', name: 'X-User-Id', in: 'header' }, 'X-User-Id')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);

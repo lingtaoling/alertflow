@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppDispatch } from '../store/hooks';
 import { setSession } from '../store/slices/authSlice';
-import { orgsApi, usersApi } from '../api';
+import { orgsApi, usersApi, authApi } from '../api';
 import { Organization, User } from '../types';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Building2, UserPlus, ChevronRight, Zap } from 'lucide-react';
@@ -40,13 +40,14 @@ export default function SetupPage() {
     setLoading(true);
     setError('');
     try {
-      const user = await usersApi.create({
+      await usersApi.create({
         name: userName.trim(),
         email: userEmail.trim(),
         orgId: org.id,
         password: userPassword,
       });
-      dispatch(setSession({ org, user }));
+      const { accessToken, user, org: orgData } = await authApi.login(userEmail.trim(), userPassword);
+      dispatch(setSession({ accessToken, org: orgData, user }));
     } catch (e: any) {
       setError(e.message);
     } finally {

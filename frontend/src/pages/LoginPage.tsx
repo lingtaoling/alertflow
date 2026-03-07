@@ -18,8 +18,8 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const { user, org } = await authApi.login(email.trim(), password);
-      dispatch(setSession({ org, user }));
+      const { accessToken, user, org } = await authApi.login(email.trim(), password);
+      dispatch(setSession({ accessToken, org, user }));
     } catch (e: any) {
       setError(e.message || 'Invalid email or password');
     } finally {

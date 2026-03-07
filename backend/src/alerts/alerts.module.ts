@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AlertsController } from './alerts.controller';
 import { AlertsService } from './alerts.service';
-import { TenantGuard } from '../common/guards/tenant.guard';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
+  imports: [AuthModule],
   controllers: [AlertsController],
-  providers: [AlertsService, TenantGuard],
+  providers: [AlertsService],
 })
 export class AlertsModule {}

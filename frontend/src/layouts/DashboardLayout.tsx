@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearSession } from '../store/slices/authSlice';
 import { NAV_ITEMS } from '../config/nav';
@@ -6,7 +6,13 @@ import { Zap, Building2, User, Shield, LogOut } from 'lucide-react';
 
 export default function DashboardLayout() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { org, user } = useAppSelector((s) => s.auth);
+
+  function handleLogout() {
+    dispatch(clearSession());
+    navigate('/login');
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -53,7 +59,7 @@ export default function DashboardLayout() {
               </div>
               <button
                 className="btn-ghost text-ink-500 hover:text-signal-red"
-                onClick={() => dispatch(clearSession())}
+                onClick={handleLogout}
                 title="Sign out"
               >
                 <LogOut size={14} />

@@ -1,8 +1,8 @@
 import { Controller, Post, Get, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiSecurity } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { TenantGuard } from '../common/guards/tenant.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrgId } from '../common/decorators/tenant.decorator';
 
 @ApiTags('Users')
@@ -18,9 +18,8 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(TenantGuard)
-  @ApiSecurity('X-Org-Id')
-  @ApiSecurity('X-User-Id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List users in the current org' })
   async findByOrg(@OrgId() orgId: string) {
     return this.usersService.findByOrg(orgId);

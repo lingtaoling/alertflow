@@ -14,21 +14,20 @@ import {
 import {
   ApiTags,
   ApiOperation,
-  ApiSecurity,
+  ApiBearerAuth,
   ApiParam,
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { AlertsService } from './alerts.service';
 import { CreateAlertDto, UpdateAlertStatusDto, ListAlertsQueryDto } from './dto/alert.dto';
-import { TenantGuard } from '../common/guards/tenant.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrgId, UserId } from '../common/decorators/tenant.decorator';
 
 @ApiTags('Alerts')
 @Controller('alerts')
-@UseGuards(TenantGuard)
-@ApiSecurity('X-Org-Id')
-@ApiSecurity('X-User-Id')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 

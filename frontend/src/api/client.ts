@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { store } from '../store';
+import { clearSession } from '../store/slices/authSlice';
 
 const apiClient = axios.create({
   baseURL: '/api',
@@ -7,20 +8,24 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
-// Attach tenant headers from Redux store
+// Attach JWT to all requests (except login)
 apiClient.interceptors.request.use((config) => {
-  const state = store.getState();
-  const { orgId, userId } = state.auth;
-  if (orgId) config.headers['X-Org-Id'] = orgId;
-  if (userId) config.headers['X-User-Id'] = userId;
+  const token = store.getState().auth.accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
-// Response error interceptor
+// Response: handle 401 by clearing session
 apiClient.interceptors.response.use(
   (res) => res,
-  (err) => {
-    const message = err.response?.data?.message || err.message || 'Unknown error';
+  (err: AxiosError) => {
+    if (err.response?.status === 401) {
+      store.dispatch(clearSession());
+      window.location.href = '/login';
+    }
+    const message = (err.response?.data as { message?: string })?.message || err.message || 'Unknown error';
     return Promise.reject(new Error(message));
   },
 );
