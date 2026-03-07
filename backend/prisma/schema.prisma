@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  normal
+}
+
+enum AlertStatus {
+  NEW
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  users  User[]
+  alerts Alert[]
+
+  @@map("organizations")
+}
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  email     String   @unique
+  password  String   @db.VarChar(100)
+  name      String?  @db.VarChar(40)
+  role      UserRole @default(normal)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  org          Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  alerts       Alert[]
+  alertEvents  AlertEvent[]
+
+  @@map("users")
+}
+
+model Alert {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  status      AlertStatus @default(NEW)
+  orgId       String      @map("org_id") @db.Uuid
+  createdById String?     @map("created_by_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  alertEvents AlertEvent[]
+
+  @@index([orgId, status], map: "idx_alerts_org_status")
+  @@index([orgId, status, createdAt(sort: Desc)], map: "idx_alerts_org_status_created")
+  @@map("alerts")
+}
+
+model AlertEvent {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId    String      @map("alert_id") @db.Uuid
+  userId     String?     @map("user_id") @db.Uuid
+  fromStatus AlertStatus? @map("from_status")
+  toStatus   AlertStatus  @map("to_status")
+  note       String?
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([alertId, createdAt], map: "idx_alert_events_alert_created")
+  @@map("alert_events")
+}
