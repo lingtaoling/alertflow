@@ -53,9 +53,9 @@ export class UsersService {
     return user;
   }
 
-  async findByOrg(orgId: string) {
+  async findByOrg(orgId: string | null) {
     return this.prisma.user.findMany({
-      where: { orgId },
+      where: orgId ? { orgId } : {},
       select: {
         id: true,
         email: true,

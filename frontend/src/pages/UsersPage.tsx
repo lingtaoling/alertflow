@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
-import { usersApi } from '../api';
-import { User } from '../types';
-import { Users, Loader2, RefreshCw, Shield } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { usersApi } from "../api";
+import { User } from "../types";
+import CreateUserForm from "../components/CreateUserForm";
+import { Users, Loader2, RefreshCw, UserPlus } from "lucide-react";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   function load() {
     setLoading(true);
-    setError('');
+    setError("");
     usersApi
       .listByOrg()
       .then(setUsers)
@@ -18,21 +20,33 @@ export default function UsersPage() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="mb-6 card p-3 flex items-center gap-3 text-xs text-ink-600">
-        <Shield size={13} className="text-signal-orange shrink-0" />
-        <span>Users in your organization (scoped by <span className="font-mono text-signal-orange">X-Org-Id</span>)</span>
-      </div>
-
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-ink-700">Users</h2>
-        <button className="btn-ghost" onClick={load} disabled={loading} title="Refresh">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn-ghost"
+            onClick={load}
+            disabled={loading}
+            title="Refresh"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => setShowCreateForm(true)}
+            title="Create user"
+          >
+            <UserPlus size={14} />
+            Create user
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -52,20 +66,36 @@ export default function UsersPage() {
         <div className="card p-12 text-center">
           <Users size={24} className="text-ink-400 mx-auto mb-4" />
           <p className="text-ink-700 font-medium mb-1">No users found</p>
-          <p className="text-ink-500 text-sm">Users are created during organization setup</p>
+          <p className="text-ink-500 text-sm">
+            Users are created during organization setup
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
-            <div key={user.id} className="card p-4 flex items-center justify-between gap-4">
+            <div
+              key={user.id}
+              className="card p-4 flex items-center justify-between gap-4"
+            >
               <div>
-                <p className="text-sm font-medium text-ink-700">{user.name || '—'}</p>
+                <p className="text-sm font-medium text-ink-700">
+                  {user.name || "—"}
+                </p>
                 <p className="text-xs text-ink-500">{user.email}</p>
               </div>
-              <span className="text-xs text-ink-400 font-mono">{user.id.slice(0, 8)}...</span>
+              <span className="text-xs text-ink-400 font-mono">
+                {user.id.slice(0, 8)}...
+              </span>
             </div>
           ))}
         </div>
+      )}
+
+      {showCreateForm && (
+        <CreateUserForm
+          onClose={() => setShowCreateForm(false)}
+          onSuccess={load}
+        />
       )}
     </div>
   );

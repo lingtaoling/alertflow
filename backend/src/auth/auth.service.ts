@@ -27,32 +27,38 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (!user.org) {
-      this.logger.warn(`User ${user.email} has no organization (org_id is null)`);
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
     if (user.password !== dto.password) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (!user.org) {
+      if (user.role !== 'admin') {
+        this.logger.warn(`User ${user.email} has no organization (org_id is null)`);
+        throw new UnauthorizedException('Invalid email or password');
+      }
+      this.logger.log(`Admin ${user.email} logged in (no org)`);
+    }
+
     const { password: _, org: _org, ...userFields } = user;
-    const org = user.org!;
+    const org = user.org;
 
     const expiresIn = this.configService.get<string>('JWT_EXPIRES') ?? this.configService.get<string>('JWT_LIFETIME') ?? '1d';
     const accessToken = this.jwtService.sign(
-      { sub: user.id, orgId: org.id, email: user.email },
+      { sub: user.id, orgId: org?.id ?? null, email: user.email, role: user.role },
       { expiresIn } as object,
     );
 
-    this.logger.log(`User ${user.email} logged in (org: ${org.name})`);
+    if (org) {
+      this.logger.log(`User ${user.email} logged in (org: ${org.name})`);
+    }
+
     return {
       accessToken,
       user: {
         ...userFields,
-        organization: { id: org.id, name: org.name },
+        organization: org ? { id: org.id, name: org.name } : null,
       },
-      org: { id: org.id, name: org.name, createdAt: org.createdAt },
+      org: org ? { id: org.id, name: org.name, createdAt: org.createdAt } : null,
     };
   }
 }

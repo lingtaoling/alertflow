@@ -8,18 +8,19 @@ import UsersPage from './pages/UsersPage';
 import OrganizationsPage from './pages/OrganizationsPage';
 
 export default function App() {
-  const { accessToken } = useAppSelector((s) => s.auth);
+  const { accessToken, orgId } = useAppSelector((s) => s.auth);
   const isAuthenticated = Boolean(accessToken);
+  const defaultRoute = orgId ? '/alerts' : '/organizations';
 
   if (isAuthenticated) {
     return (
       <Routes>
         <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/alerts" replace />} />
+          <Route index element={<Navigate to={defaultRoute} replace />} />
           <Route path="alerts" element={<AlertsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="organizations" element={<OrganizationsPage />} />
-          <Route path="*" element={<Navigate to="/alerts" replace />} />
+          <Route path="*" element={<Navigate to={defaultRoute} replace />} />
         </Route>
       </Routes>
     );

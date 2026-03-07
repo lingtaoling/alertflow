@@ -17,11 +17,12 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response: handle 401 by clearing session
+// Response: handle 401 by clearing session (skip for login - invalid credentials is expected)
 apiClient.interceptors.response.use(
   (res) => res,
   (err: AxiosError) => {
-    if (err.response?.status === 401) {
+    const isLoginRequest = err.config?.url?.includes('/auth/login');
+    if (err.response?.status === 401 && !isLoginRequest) {
       store.dispatch(clearSession());
       window.location.href = '/login';
     }

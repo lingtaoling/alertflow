@@ -1,40 +1,67 @@
-import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchAlerts, setFilterStatus, setOffset, fetchAlertById, clearSelected } from '../store/slices/alertsSlice';
-import { AlertStatus } from '../types';
-import AlertCard from '../components/AlertCard';
-import AlertDetailModal from '../components/AlertDetailModal';
-import CreateAlertForm from '../components/CreateAlertForm';
-import { statusConfig } from '../utils';
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
-  Plus, RefreshCw, Zap, AlertCircle, CheckCircle2, Activity,
-  Loader2, ChevronLeft, ChevronRight, Shield
-} from 'lucide-react';
+  fetchAlerts,
+  setFilterStatus,
+  setOffset,
+  fetchAlertById,
+  clearSelected,
+} from "../store/slices/alertsSlice";
+import { AlertStatus } from "../types";
+import AlertCard from "../components/AlertCard";
+import AlertDetailModal from "../components/AlertDetailModal";
+import CreateAlertForm from "../components/CreateAlertForm";
+import { statusConfig } from "../utils";
+import {
+  Plus,
+  RefreshCw,
+  Zap,
+  AlertCircle,
+  CheckCircle2,
+  Activity,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+} from "lucide-react";
 
-const STATUS_FILTERS: { label: string; value: AlertStatus | '' }[] = [
-  { label: 'All', value: '' },
-  { label: 'New', value: 'NEW' },
-  { label: 'Acknowledged', value: 'ACKNOWLEDGED' },
-  { label: 'Resolved', value: 'RESOLVED' },
+const STATUS_FILTERS: { label: string; value: AlertStatus | "" }[] = [
+  { label: "All", value: "" },
+  { label: "New", value: "NEW" },
+  { label: "Acknowledged", value: "ACKNOWLEDGED" },
+  { label: "Resolved", value: "RESOLVED" },
 ];
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch();
-  const { items, total, loading, error, filterStatus, limit, offset, selectedAlert } = useAppSelector((s) => s.alerts);
+  const {
+    items,
+    total,
+    loading,
+    error,
+    filterStatus,
+    limit,
+    offset,
+    selectedAlert,
+  } = useAppSelector((s) => s.alerts);
   const { orgId } = useAppSelector((s) => s.auth);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   function load() {
-    dispatch(fetchAlerts({
-      status: filterStatus || undefined,
-      limit,
-      offset,
-    }));
+    dispatch(
+      fetchAlerts({
+        status: filterStatus || undefined,
+        limit,
+        offset,
+      }),
+    );
   }
 
-  useEffect(() => { load(); }, [filterStatus, offset, limit]);
+  useEffect(() => {
+    load();
+  }, [filterStatus, offset, limit]);
 
-  function handleStatusFilter(val: AlertStatus | '') {
+  function handleStatusFilter(val: AlertStatus | "") {
     dispatch(setFilterStatus(val));
   }
 
@@ -42,10 +69,25 @@ export default function AlertsPage() {
   const currentPage = Math.floor(offset / limit) + 1;
 
   const stats = [
-    { label: 'Total', value: total, icon: Activity, color: 'text-ink-600' },
-    { label: 'New', value: items.filter((a) => a.status === 'NEW').length, icon: AlertCircle, color: 'text-signal-red' },
-    { label: 'Ack\'d', value: items.filter((a) => a.status === 'ACKNOWLEDGED').length, icon: Activity, color: 'text-signal-orange' },
-    { label: 'Resolved', value: items.filter((a) => a.status === 'RESOLVED').length, icon: CheckCircle2, color: 'text-signal-green' },
+    { label: "Total", value: total, icon: Activity, color: "text-ink-600" },
+    {
+      label: "New",
+      value: items.filter((a) => a.status === "NEW").length,
+      icon: AlertCircle,
+      color: "text-signal-red",
+    },
+    {
+      label: "Ack'd",
+      value: items.filter((a) => a.status === "ACKNOWLEDGED").length,
+      icon: Activity,
+      color: "text-signal-orange",
+    },
+    {
+      label: "Resolved",
+      value: items.filter((a) => a.status === "RESOLVED").length,
+      icon: CheckCircle2,
+      color: "text-signal-green",
+    },
   ];
 
   return (
@@ -55,20 +97,17 @@ export default function AlertsPage() {
         <h1 className="text-lg font-semibold text-ink-700">Alerts</h1>
         <div className="flex items-center gap-2">
           <button className="btn-ghost" onClick={load} title="Refresh">
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
-          <button className="btn-primary" onClick={() => setShowCreateForm(true)}>
+          <button
+            className="btn-primary"
+            onClick={() => setShowCreateForm(true)}
+          >
             <Plus size={14} />
             <span className="hidden sm:inline">New Alert</span>
           </button>
         </div>
-      </div>
-
-      {/* Tenant info banner */}
-      <div className="mb-6 card p-3 flex items-center gap-3 text-xs text-ink-600">
-        <Shield size={13} className="text-signal-orange shrink-0" />
-        <span>Tenant isolation active — all queries are scoped to org <span className="font-mono text-ink-700">{orgId?.slice(0, 8)}...</span> via <span className="font-mono text-signal-orange">JWT</span></span>
       </div>
 
       {/* Stats row */}
@@ -79,7 +118,9 @@ export default function AlertsPage() {
               <s.icon size={13} className={s.color} />
               <span className="text-ink-500 text-xs">{s.label}</span>
             </div>
-            <div className="text-2xl font-display font-bold text-ink-700">{s.value}</div>
+            <div className="text-2xl font-display font-bold text-ink-700">
+              {s.value}
+            </div>
           </div>
         ))}
       </div>
@@ -95,16 +136,24 @@ export default function AlertsPage() {
               onClick={() => handleStatusFilter(f.value)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? cfg ? cfg.badge + ' border' : 'bg-ink-700 text-white border border-ink-600'
-                  : 'text-ink-500 hover:text-ink-700 hover:bg-ink-100'
+                  ? cfg
+                    ? cfg.badge + " border"
+                    : "bg-ink-700 text-white border border-ink-600"
+                  : "text-ink-500 hover:text-ink-700 hover:bg-ink-100"
               }`}
             >
-              {f.value && cfg && <span className={`inline-block w-1.5 h-1.5 rounded-full ${cfg.dot} mr-1.5`} />}
+              {f.value && cfg && (
+                <span
+                  className={`inline-block w-1.5 h-1.5 rounded-full ${cfg.dot} mr-1.5`}
+                />
+              )}
               {f.label}
             </button>
           );
         })}
-        <span className="ml-2 text-ink-500 text-xs">{total} alert{total !== 1 ? 's' : ''}</span>
+        <span className="ml-2 text-ink-500 text-xs">
+          {total} alert{total !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {/* Alert list */}
@@ -128,9 +177,14 @@ export default function AlertsPage() {
           </div>
           <p className="text-ink-700 font-medium mb-1">No alerts found</p>
           <p className="text-ink-500 text-sm mb-4">
-            {filterStatus ? `No alerts with status "${filterStatus}"` : 'Create your first alert to get started'}
+            {filterStatus
+              ? `No alerts with status "${filterStatus}"`
+              : "Create your first alert to get started"}
           </p>
-          <button className="btn-primary mx-auto" onClick={() => setShowCreateForm(true)}>
+          <button
+            className="btn-primary mx-auto"
+            onClick={() => setShowCreateForm(true)}
+          >
             <Plus size={14} /> Create Alert
           </button>
         </div>
@@ -171,7 +225,9 @@ export default function AlertsPage() {
         </div>
       )}
 
-      {showCreateForm && <CreateAlertForm onClose={() => setShowCreateForm(false)} />}
+      {showCreateForm && (
+        <CreateAlertForm onClose={() => setShowCreateForm(false)} />
+      )}
       {selectedAlert && <AlertDetailModal alert={selectedAlert} />}
     </div>
   );

@@ -29,14 +29,15 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setSession(state, action: PayloadAction<{ accessToken: string; org: Organization; user: User }>) {
+    setSession(state, action: PayloadAction<{ accessToken: string; org: Organization | null; user: User }>) {
       state.accessToken = action.payload.accessToken;
-      state.orgId = action.payload.org.id;
+      state.orgId = action.payload.org?.id ?? null;
       state.userId = action.payload.user.id;
       state.org = action.payload.org;
       state.user = action.payload.user;
       localStorage.setItem(TOKEN_KEY, action.payload.accessToken);
-      localStorage.setItem('orgId', action.payload.org.id);
+      if (action.payload.org) localStorage.setItem('orgId', action.payload.org.id);
+      else localStorage.removeItem('orgId');
       localStorage.setItem('userId', action.payload.user.id);
     },
     clearSession(state) {

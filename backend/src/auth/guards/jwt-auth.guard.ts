@@ -11,10 +11,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const result = await super.canActivate(context);
     if (result) {
       const request = context.switchToHttp().getRequest();
-      const user = request.user as { userId: string; orgId: string; email: string } | undefined;
+      const user = request.user as { userId: string; orgId: string | null; email: string; role?: string } | undefined;
       if (user) {
         request.orgId = user.orgId;
         request.userId = user.userId;
+        request.role = user.role ?? 'normal';
       }
     }
     return result as boolean;

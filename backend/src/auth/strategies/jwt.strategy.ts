@@ -6,8 +6,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 export interface JwtPayload {
   sub: string;
-  orgId: string;
+  orgId: string | null;
   email: string;
+  role?: string;
 }
 
 @Injectable()
@@ -27,15 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     const user = await this.prisma.user.findFirst({
       where: {
         id: payload.sub,
-        orgId: payload.orgId,
+        orgId: payload.orgId ?? null,
       },
-      select: { id: true, orgId: true, email: true },
+      select: { id: true, orgId: true, email: true, role: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found or does not belong to organization');
     }
 
-    return { userId: user.id, orgId: user.orgId, email: user.email };
+    return { userId: user.id, orgId: user.orgId, email: user.email, role: user.role };
   }
 }

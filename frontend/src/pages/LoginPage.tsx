@@ -39,11 +39,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-4">
-            <img
-              src={logoIcon}
-              alt=""
-              className="h-14 w-auto"
-            />
+            <img src={logoIcon} alt="" className="h-14 w-auto" />
             <span className="text-2xl font-logo font-bold text-ink-700 tracking-tight">
               AlertFlow
             </span>
@@ -55,7 +51,7 @@ export default function LoginPage() {
         <div className="gradient-border rounded-2xl p-6 bg-white shadow-xl shadow-ink-700/20">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="label">Email address</label>
+              <label className="label">Email</label>
               <input
                 className="input"
                 type="email"

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { orgsApi } from '../api';
 import { Organization } from '../types';
-import { Building2, Loader2, RefreshCw, Shield } from 'lucide-react';
+import CreateOrgForm from '../components/CreateOrgForm';
+import { Building2, Loader2, Plus, RefreshCw, Shield } from 'lucide-react';
 
 export default function OrganizationsPage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   function load() {
     setLoading(true);
@@ -29,10 +31,16 @@ export default function OrganizationsPage() {
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-ink-700">Organizations</h2>
-        <button className="btn-ghost" onClick={load} disabled={loading} title="Refresh">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="btn-ghost" onClick={load} disabled={loading} title="Refresh">
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+          <button className="btn-primary" onClick={() => setShowCreateForm(true)} title="Create organization">
+            <Plus size={14} />
+            Create organization
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -52,7 +60,10 @@ export default function OrganizationsPage() {
         <div className="card p-12 text-center">
           <Building2 size={24} className="text-ink-400 mx-auto mb-4" />
           <p className="text-ink-700 font-medium mb-1">No organizations found</p>
-          <p className="text-ink-500 text-sm">Organizations are created during setup</p>
+          <p className="text-ink-500 text-sm mb-4">Organizations are created during setup</p>
+          <button className="btn-primary mx-auto" onClick={() => setShowCreateForm(true)}>
+            <Plus size={14} /> Create organization
+          </button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -70,6 +81,10 @@ export default function OrganizationsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {showCreateForm && (
+        <CreateOrgForm onClose={() => setShowCreateForm(false)} onSuccess={load} />
       )}
     </div>
   );

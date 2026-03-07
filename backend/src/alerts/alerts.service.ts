@@ -61,14 +61,17 @@ export class AlertsService {
   }
 
   /**
-   * List alerts — strictly filtered by orgId.
-   * Tenant isolation: WHERE clause always includes orgId.
+   * List alerts — filtered by orgId for normal users, all orgs for admin.
+   * Admin (orgId null): no org filter. Normal: tenant isolation.
    */
-  async findAll(orgId: string, query: ListAlertsQueryDto): Promise<PaginatedResult<any>> {
+  async findAll(orgId: string | null, query: ListAlertsQueryDto): Promise<PaginatedResult<any>> {
     const { limit = 20, offset = 0, status } = query;
 
-    // Build where clause — orgId is ALWAYS included
-    const where: any = { orgId };
+    // Build where clause — orgId only for non-admin (tenant isolation)
+    const where: any = {};
+    if (orgId) {
+      where.orgId = orgId;
+    }
     if (status) {
       where.status = status;
     }
