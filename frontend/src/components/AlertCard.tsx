@@ -25,7 +25,15 @@ export default function AlertCard({ alert, onClick }: Props) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="text-sm font-semibold text-white truncate group-hover:text-signal-orange transition-colors">
+            <h3
+              className={`text-sm font-semibold text-ink-700 transition-colors break-words ${
+                alert.status === 'NEW'
+                  ? 'group-hover:text-signal-red'
+                  : alert.status === 'ACKNOWLEDGED'
+                    ? 'group-hover:text-signal-orange'
+                    : 'group-hover:text-signal-green'
+              }`}
+            >
               {alert.title}
             </h3>
           </div>

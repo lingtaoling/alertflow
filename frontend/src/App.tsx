@@ -4,7 +4,6 @@ import LoginPage from './pages/LoginPage';
 import SetupPage from './pages/SetupPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import AlertsPage from './pages/AlertsPage';
-import AlertEventsPage from './pages/AlertEventsPage';
 import UsersPage from './pages/UsersPage';
 import OrganizationsPage from './pages/OrganizationsPage';
 
@@ -18,7 +17,6 @@ export default function App() {
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Navigate to="/alerts" replace />} />
           <Route path="alerts" element={<AlertsPage />} />
-          <Route path="alert-events" element={<AlertEventsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="organizations" element={<OrganizationsPage />} />
           <Route path="*" element={<Navigate to="/alerts" replace />} />

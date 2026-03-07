@@ -43,8 +43,8 @@ export default function AlertsPage() {
 
   const stats = [
     { label: 'Total', value: total, icon: Activity, color: 'text-ink-600' },
-    { label: 'New', value: items.filter((a) => a.status === 'NEW').length, icon: AlertCircle, color: 'text-signal-orange' },
-    { label: 'Ack\'d', value: items.filter((a) => a.status === 'ACKNOWLEDGED').length, icon: Activity, color: 'text-signal-amber' },
+    { label: 'New', value: items.filter((a) => a.status === 'NEW').length, icon: AlertCircle, color: 'text-signal-red' },
+    { label: 'Ack\'d', value: items.filter((a) => a.status === 'ACKNOWLEDGED').length, icon: Activity, color: 'text-signal-orange' },
     { label: 'Resolved', value: items.filter((a) => a.status === 'RESOLVED').length, icon: CheckCircle2, color: 'text-signal-green' },
   ];
 
