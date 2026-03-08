@@ -20,7 +20,7 @@ export default function AlertCard({ alert, onClick, showOrg }: Props) {
 
   return (
     <div
-      className={`card-hover p-4 cursor-pointer group animate-fade-in transition-colors hover:border-ink-200 ${statusHoverBg[alert.status]}`}
+      className={`card-hover p-3 cursor-pointer group animate-fade-in transition-colors hover:border-ink-200 ${statusHoverBg[alert.status]}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
