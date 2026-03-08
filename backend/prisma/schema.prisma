@@ -63,7 +63,7 @@ model Alert {
   alertEvents AlertEvent[]
 
   @@index([orgId, status], map: "idx_alerts_org_status")
-  @@index([orgId, status, createdAt(sort: Desc)], map: "idx_alerts_org_status_created")
+  @@index([orgId, status, updatedAt(sort: Desc)], map: "idx_alerts_org_status_updated")
   @@map("alerts")
 }
 

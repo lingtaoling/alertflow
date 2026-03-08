@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchAlertEvents,
@@ -90,13 +91,13 @@ export default function AlertDetailModal({ alert }: Props) {
     RESOLVED: "border-signal-green bg-signal-green/20 text-signal-green",
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  const modal = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center min-h-[100vh] p-4 overflow-y-auto">
       <div
-        className="absolute inset-0 bg-ink-700/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-ink-700/60 backdrop-blur-sm -z-10"
         onClick={handleClose}
       />
-      <div className="relative w-full max-w-2xl rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] flex flex-col max-h-[90vh] animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] flex flex-col max-h-[calc(100vh-2rem)] shrink-0 animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
         {/* Header */}
         <div className="p-6">
           {/* Row 1: status (left) + created by + updated time + close (right) */}
@@ -105,15 +106,15 @@ export default function AlertDetailModal({ alert }: Props) {
               <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
               {statusCfg.label}
             </span>
-            <div className="flex items-center gap-4 text-xs text-ink-500">
+            <div className="flex items-center gap-4 text-xs text-gray-900 font-medium">
               <div className="flex items-center gap-1.5">
                 <User size={12} />
                 Created by{" "}
-                <span className="text-ink-700 font-medium">
+                <span className="text-gray-900 font-semibold">
                   {alert.createdBy?.name}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-ink-700">
+              <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
                 <Clock size={12} /> {formatDateTime(alert.createdAt)}
               </div>
               <button
@@ -126,19 +127,21 @@ export default function AlertDetailModal({ alert }: Props) {
           </div>
           {/* Row 2: title */}
           <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-3 items-baseline">
-            <span className="text-sm font-medium text-ink-500">Title</span>
-            <span className="text-[1rem] text-ink-700">{alert.title}</span>
+            <span className="text-sm font-medium text-gray-900">Title</span>
+            <span className="text-[1rem] text-gray-900 font-semibold">
+              {alert.title}
+            </span>
           </div>
         </div>
 
         {/* Events timeline */}
         <div className="flex-1 overflow-y-auto p-6 pt-0">
           {eventsLoading ? (
-            <div className="flex items-center gap-2 text-ink-500 py-8 justify-center">
+            <div className="flex items-center gap-2 text-gray-900 py-8 justify-center">
               <Loader2 size={16} className="animate-spin" /> Loading events...
             </div>
           ) : selectedAlertEvents.length === 0 ? (
-            <p className="text-ink-500 text-sm text-center py-8">
+            <p className="text-gray-900 font-medium text-sm text-center py-8">
               No events yet
             </p>
           ) : (
@@ -188,11 +191,11 @@ export default function AlertDetailModal({ alert }: Props) {
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-ink-500 shrink-0">
                           <User size={10} />
-                          <span className="text-ink-700">
+                          <span className="text-gray-900 font-medium">
                             {event.user?.name}
                           </span>
                           <span className="text-ink-400">·</span>
-                          <span className="text-ink-500 whitespace-nowrap">
+                          <span className="text-gray-900 font-medium whitespace-nowrap">
                             {formatDateTime(event.createdAt)}
                           </span>
                         </div>
@@ -267,4 +270,6 @@ export default function AlertDetailModal({ alert }: Props) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

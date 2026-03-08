@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { X, AlertTriangle } from "lucide-react";
 
 export interface ModalFormProps {
@@ -42,16 +43,16 @@ export default function ModalForm({
   onSubmit,
   submitIcon,
 }: ModalFormProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  const modal = (
+    <div className="fixed inset-0 z-[50] flex items-center justify-center min-h-[100vh] p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-ink-700/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-ink-700/60 backdrop-blur-sm -z-10"
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-lg rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] p-6 animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
+      {/* Modal - top-aligned, scrollable when tall */}
+      <div className="relative w-full max-w-lg rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] p-6 max-h-[calc(100vh-2rem)] overflow-y-auto animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)] shrink-0">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center">
@@ -96,4 +97,6 @@ export default function ModalForm({
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { NAV_ITEMS } from "./nav.config";
 import { Shield, LogOut, Menu, X } from "lucide-react";
 import logo from "../../assets/images/alertflow-icon1.svg";
+import logoFull from "../../assets/images/alertflow-logo.svg";
 
 export default function DashboardLayout() {
   const { org, user, isAdmin, logout } = useAuth();
@@ -21,7 +22,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-ink-200 bg-white/95 backdrop-blur-md sticky top-0 z-30 relative">
+      <header className="border-b border-ink-200 bg-white/95 backdrop-blur-md sticky top-0 z-20 relative">
         <div className="max-w-6xl mx-auto px-4 relative">
           <div className="h-16 flex items-center justify-between gap-4">
             <NavLink to="/alerts" className="flex items-center gap-2 shrink-0">
@@ -103,8 +104,16 @@ export default function DashboardLayout() {
         </div>
       </header>
 
-      <main className="flex-1">
-        <Outlet />
+      <main className="flex-1 relative">
+        <div
+          className="absolute right-4 top-3/4 -translate-y-1/2 w-60 h-60 pointer-events-none select-none -z-10"
+          aria-hidden
+        >
+          <img src={logoFull} alt="" className="w-full h-full object-contain" />
+        </div>
+        <div className="relative z-10">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
