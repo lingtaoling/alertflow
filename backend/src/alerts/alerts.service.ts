@@ -71,7 +71,7 @@ export class AlertsService {
    * Admin (orgId null): no org filter. Normal: tenant isolation.
    */
   async findAll(orgId: string | null, query: ListAlertsQueryDto): Promise<PaginatedResult<any>> {
-    const { limit = 20, offset = 0, status } = query;
+    const { limit = 20, offset = 0, status, search } = query;
 
     // Build where clause — orgId only for non-admin (tenant isolation)
     const where: any = {};
@@ -81,8 +81,15 @@ export class AlertsService {
     if (status) {
       where.status = status;
     }
+    if (search?.trim()) {
+      const term = search.trim();
+      where.OR = [
+        { title: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+      ];
+    }
 
-    const baseWhere = orgId ? { orgId } : {};
+    const baseWhere = { ...where };
     const [data, total, countByStatus] = await Promise.all([
       this.prisma.alert.findMany({
         where,

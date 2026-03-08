@@ -15,6 +15,7 @@ interface AlertsState {
   selectedAlertEvents: AlertEvent[];
   eventsLoading: boolean;
   filterStatus: AlertStatus | '';
+  searchQuery: string;
   limit: number;
   offset: number;
   createLoading: boolean;
@@ -32,6 +33,7 @@ const initialState: AlertsState = {
   selectedAlertEvents: [],
   eventsLoading: false,
   filterStatus: '',
+  searchQuery: '',
   limit: 10,
   offset: 0,
   createLoading: false,
@@ -40,7 +42,7 @@ const initialState: AlertsState = {
 
 export const fetchAlerts = createAsyncThunk(
   'alerts/fetchAlerts',
-  async (params: { status?: AlertStatus; limit?: number; offset?: number }, { rejectWithValue }) => {
+  async (params: { status?: AlertStatus; search?: string; limit?: number; offset?: number }, { rejectWithValue }) => {
     try {
       return await alertsApi.list(params);
     } catch (e: any) {
@@ -106,6 +108,10 @@ const alertsSlice = createSlice({
     },
     setOffset(state, action: PayloadAction<number>) {
       state.offset = action.payload;
+    },
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.searchQuery = action.payload;
+      state.offset = 0;
     },
     clearSelected(state) {
       state.selectedAlert = null;
@@ -181,5 +187,5 @@ const alertsSlice = createSlice({
   },
 });
 
-export const { setFilterStatus, setOffset, clearSelected, clearError } = alertsSlice.actions;
+export const { setFilterStatus, setOffset, setSearchQuery, clearSelected, clearError } = alertsSlice.actions;
 export default alertsSlice.reducer;

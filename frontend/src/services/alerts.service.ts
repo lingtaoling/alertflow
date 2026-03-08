@@ -5,7 +5,7 @@ export const alertsApi = {
   create: (data: { title: string; description?: string }) =>
     apiClient.post<Alert>('/alerts', data).then((r) => r.data),
 
-  list: (params?: { status?: AlertStatus; limit?: number; offset?: number }) =>
+  list: (params?: { status?: AlertStatus; search?: string; limit?: number; offset?: number }) =>
     apiClient
       .get<PaginatedResult<Alert>>('/alerts', { params })
       .then((r) => r.data),

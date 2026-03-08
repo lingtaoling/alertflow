@@ -56,4 +56,10 @@ export class ListAlertsQueryDto extends PaginationDto {
   @IsOptional()
   @IsEnum(AlertStatus)
   status?: AlertStatus;
+
+  @ApiPropertyOptional({ example: 'cpu spike', description: 'Search in title and description' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  search?: string;
 }

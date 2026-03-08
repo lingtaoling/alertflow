@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   Activity,
   Loader2,
+  Search,
+  X,
 } from "lucide-react";
 import Pagination from "../../components/ui/Pagination";
 import StatsCard from "../../components/ui/StatsCard";
@@ -46,6 +48,8 @@ export default function AlertsPage() {
     load,
     handleStatusFilter,
     handleSetOffset,
+    searchQuery,
+    handleSearchQuery,
     handleSelectAlert,
   } = useAlerts();
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -95,11 +99,33 @@ export default function AlertsPage() {
   return (
     <div className="max-w-6xl mx-auto px-3 py-6">
       <div className="flex items-center justify-between gap-4 mb-2">
-        <h1 className="text-lg font-semibold text-ink-700">
+        <h1 className="text-lg font-semibold text-ink-700 shrink-0">
           Alerts
           {isAdmin ? " – All organizations" : org?.name ? ` – ${org.name}` : ""}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-md mx-4 min-w-0">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {(searchQuery ?? '').trim() && (
+              <button
+                type="button"
+                onClick={() => handleSearchQuery('')}
+                className="p-0.5 rounded text-ink-400 hover:text-ink-600 hover:bg-ink-100 transition-colors"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+            <Search size={14} className="text-ink-400 shrink-0" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search alerts by title or description..."
+            value={searchQuery ?? ''}
+            onChange={(e) => handleSearchQuery(e.target.value)}
+            className="w-full pr-12 py-1.5 text-sm bg-transparent border-0 border-b border-ink-300 rounded-none placeholder:text-ink-400 text-ink-700 focus:outline-none focus:border-signal-orange focus:border-b"
+          />
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
           <div className="new-alert-btn-wrapper group relative inline-flex overflow-visible">
             <button
               className="btn-primary px-3 py-1.5 text-base font-bold bg-transparent hover:bg-transparent text-signal-orange relative z-10"
@@ -166,9 +192,11 @@ export default function AlertsPage() {
           </div>
           <p className="text-ink-700 font-medium mb-1">No alerts found</p>
           <p className="text-ink-500 text-sm mb-4">
-            {filterStatus
-              ? `No alerts with status "${filterStatus}"`
-              : "Create your first alert to get started"}
+            {(searchQuery ?? '').trim()
+              ? `No alerts matching "${(searchQuery ?? '').trim()}"`
+              : filterStatus
+                ? `No alerts with status "${filterStatus}"`
+                : "Create your first alert to get started"}
           </p>
           <button
             className="btn-primary mx-auto"

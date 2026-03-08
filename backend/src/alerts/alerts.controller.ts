@@ -51,6 +51,7 @@ export class AlertsController {
   @Get()
   @ApiOperation({ summary: 'List alerts for the authenticated org (with optional status filter)' })
   @ApiQuery({ name: 'status', required: false, enum: ['NEW', 'ACKNOWLEDGED', 'RESOLVED'] })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
   async findAll(
