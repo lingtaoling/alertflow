@@ -3,6 +3,7 @@ import { useAppDispatch } from "../../store/hooks";
 import { clearSelected } from "../../store/slices/alertsSlice";
 import { AlertStatus } from "../../types";
 import { useAlerts } from "./hooks/useAlerts";
+import { useAlertsSocket } from "../../hooks/useAlertsSocket";
 import AlertCard from "./components/AlertCard";
 import AlertDetailModal from "./components/AlertDetailModal";
 import CreateAlertForm from "./components/CreateAlertForm";
@@ -27,6 +28,7 @@ const STATUS_FILTERS: { label: string; value: AlertStatus | "" }[] = [
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch();
+  useAlertsSocket();
   const {
     items,
     total,

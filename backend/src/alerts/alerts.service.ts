@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AlertStatus } from '@prisma/client';
 import { CreateAlertDto, UpdateAlertStatusDto, ListAlertsQueryDto } from './dto/alert.dto';
 import { PaginatedResult } from '../common/dto/pagination.dto';
+import { AlertsGateway } from './alerts.gateway';
 
 // Enforced workflow transitions
 const VALID_TRANSITIONS: Record<AlertStatus, AlertStatus[]> = {
@@ -21,7 +22,10 @@ const VALID_TRANSITIONS: Record<AlertStatus, AlertStatus[]> = {
 export class AlertsService {
   private readonly logger = new Logger(AlertsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alertsGateway: AlertsGateway,
+  ) {}
 
   /**
    * Create an alert — always scoped to the authenticated user's org.
@@ -57,7 +61,9 @@ export class AlertsService {
     });
 
     this.logger.log(`Alert created: ${alert.id}`);
-    return this.findOne(orgId, alert.id);
+    const full = await this.findOne(orgId, alert.id);
+    this.alertsGateway.emitAlertEvent(orgId, 'alert:created', full);
+    return full;
   }
 
   /**
@@ -203,7 +209,9 @@ export class AlertsService {
     });
 
     this.logger.log(`Alert ${alertId}: ${alert.status} → ${dto.status} (v${dto.version} → v${dto.version + 1}, matched ${count} row)`);
-    return this.findOne(orgId, alertId);
+    const full = await this.findOne(orgId, alertId);
+    this.alertsGateway.emitAlertEvent(orgId, 'alert:updated', full);
+    return full;
   }
 
   /**
