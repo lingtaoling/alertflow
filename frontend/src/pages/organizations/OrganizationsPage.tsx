@@ -37,11 +37,10 @@ export default function OrganizationsPage() {
         <h2 className="text-lg font-semibold text-ink-700">Organizations</h2>
         <div className="flex items-center gap-2">
           <button
-            className="btn-primary"
+            className="btn-signin btn-create"
             onClick={() => setShowCreateForm(true)}
             title="Create organization"
           >
-            <Plus size={14} />
             Create organization
           </button>
         </div>

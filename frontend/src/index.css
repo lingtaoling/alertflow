@@ -259,6 +259,11 @@
   pointer-events: none;
 }
 
+.btn-create {
+  height: 36px;
+  padding: 0 20px;
+  font-size: 0.875rem;
+}
 :root {
   --alt-orange: #f28c28;
 }

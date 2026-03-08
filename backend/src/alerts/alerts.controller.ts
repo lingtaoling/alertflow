@@ -39,13 +39,17 @@ export class AlertsController {
   @ApiResponse({ status: 201, description: 'Alert created' })
   async create(
     @OrgId() orgId: string | null,
+    @Role() role: string,
     @UserId() userId: string,
     @Body() dto: CreateAlertDto,
   ) {
-    if (!orgId) {
-      throw new BadRequestException('Organization required to create alerts');
+    const effectiveOrgId = role === 'admin' && dto.orgId ? dto.orgId : orgId;
+    if (!effectiveOrgId) {
+      throw new BadRequestException(
+        role === 'admin' ? 'Organization required. Please select an organization.' : 'Organization required to create alerts',
+      );
     }
-    return this.alertsService.create(orgId, userId, dto);
+    return this.alertsService.create(effectiveOrgId, userId, dto);
   }
 
   @Get()

@@ -2,7 +2,7 @@ import apiClient from './api.client';
 import { Alert, AlertEvent, AlertStatus, PaginatedResult } from '../types';
 
 export const alertsApi = {
-  create: (data: { title: string; description?: string }) =>
+  create: (data: { title: string; description?: string; orgId?: string }) =>
     apiClient.post<Alert>('/alerts', data).then((r) => r.data),
 
   list: (params?: { status?: AlertStatus; search?: string; limit?: number; offset?: number }) =>

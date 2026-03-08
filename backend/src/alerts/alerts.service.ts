@@ -95,7 +95,7 @@ export class AlertsService {
         where,
         take: limit,
         skip: offset,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
         include: {
           createdBy: { select: { id: true, name: true, email: true } },
           org: { select: { id: true, name: true } },

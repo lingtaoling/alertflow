@@ -36,11 +36,11 @@ export default function UsersPage() {
         <h2 className="text-lg font-semibold text-ink-700">Users</h2>
         <div className="flex items-center gap-2">
           <button
-            className="btn-primary"
+            className="btn-signin btn-create"
             onClick={() => setShowCreateForm(true)}
             title="Create user"
           >
-            <UserPlus size={14} />
+            {/* <UserPlus size={14} /> */}
             Create user
           </button>
         </div>
@@ -89,7 +89,9 @@ export default function UsersPage() {
                 key: "role",
                 header: "Role",
                 render: (u) => (
-                  <span className="text-ink-600 capitalize">{u.role ?? "—"}</span>
+                  <span className="text-ink-600 capitalize">
+                    {u.role ?? "—"}
+                  </span>
                 ),
               },
               {

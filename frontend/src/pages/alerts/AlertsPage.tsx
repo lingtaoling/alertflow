@@ -83,7 +83,7 @@ export default function AlertsPage() {
       value: counts?.ACKNOWLEDGED ?? 0,
       icon: Activity,
       iconBg: "bg-signal-orange/15 border border-signal-orange/30",
-      iconColor: "text-orange-700",
+      iconColor: "text-orange-500",
       filterValue: "ACKNOWLEDGED",
     },
     {
@@ -105,10 +105,10 @@ export default function AlertsPage() {
         </h1>
         <div className="relative flex-1 max-w-md mx-4 min-w-0">
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {(searchQuery ?? '').trim() && (
+            {(searchQuery ?? "").trim() && (
               <button
                 type="button"
-                onClick={() => handleSearchQuery('')}
+                onClick={() => handleSearchQuery("")}
                 className="p-0.5 rounded text-ink-400 hover:text-ink-600 hover:bg-ink-100 transition-colors"
                 aria-label="Clear search"
               >
@@ -120,7 +120,7 @@ export default function AlertsPage() {
           <input
             type="text"
             placeholder="Search alerts by title or description..."
-            value={searchQuery ?? ''}
+            value={searchQuery ?? ""}
             onChange={(e) => handleSearchQuery(e.target.value)}
             className="w-full pr-12 py-1.5 text-sm bg-transparent border-0 border-b border-ink-300 rounded-none placeholder:text-ink-400 text-ink-700 focus:outline-none focus:border-signal-orange focus:border-b"
           />
@@ -192,8 +192,8 @@ export default function AlertsPage() {
           </div>
           <p className="text-ink-700 font-medium mb-1">No alerts found</p>
           <p className="text-ink-500 text-sm mb-4">
-            {(searchQuery ?? '').trim()
-              ? `No alerts matching "${(searchQuery ?? '').trim()}"`
+            {(searchQuery ?? "").trim()
+              ? `No alerts matching "${(searchQuery ?? "").trim()}"`
               : filterStatus
                 ? `No alerts with status "${filterStatus}"`
                 : "Create your first alert to get started"}

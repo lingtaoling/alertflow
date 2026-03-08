@@ -3,21 +3,21 @@ import { AlertStatus } from '../types';
 export const statusConfig: Record<AlertStatus, { label: string; color: string; dot: string; badge: string }> = {
   NEW: {
     label: 'New',
-    color: 'text-signal-red',
-    dot: 'bg-signal-red',
-    badge: 'bg-red-500/15 text-signal-red border border-signal-red/30',
+    color: 'text-red-800',
+    dot: 'bg-red-700',
+    badge: 'bg-red-600/25 text-red-800 border border-red-600/50',
   },
   ACKNOWLEDGED: {
     label: 'Acknowledged',
-    color: 'text-signal-orange',
-    dot: 'bg-signal-orange',
-    badge: 'bg-orange-500/15 text-signal-orange border border-signal-orange/30',
+    color: 'text-orange-800',
+    dot: 'bg-orange-700',
+    badge: 'bg-orange-600/25 text-orange-800 border border-orange-600/50',
   },
   RESOLVED: {
     label: 'Resolved',
-    color: 'text-signal-green',
-    dot: 'bg-signal-green',
-    badge: 'bg-green-500/15 text-signal-green border border-signal-green/30',
+    color: 'text-emerald-800',
+    dot: 'bg-emerald-700',
+    badge: 'bg-emerald-600/25 text-emerald-800 border border-emerald-600/50',
   },
 };
 

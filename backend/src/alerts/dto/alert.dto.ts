@@ -8,6 +8,7 @@ import {
   IsIn,
   IsInt,
   Min,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AlertStatus } from '@prisma/client';
@@ -26,6 +27,11 @@ export class CreateAlertDto {
   @IsString()
   @MaxLength(2000)
   description?: string;
+
+  @ApiPropertyOptional({ description: 'Organization ID. Required for admin when creating alert.' })
+  @IsOptional()
+  @IsUUID()
+  orgId?: string;
 }
 
 export class UpdateAlertStatusDto {

@@ -33,8 +33,15 @@ interface Props {
 
 export default function AlertDetailModal({ alert }: Props) {
   const dispatch = useAppDispatch();
-  const { selectedAlertEvents, eventsLoading, updateLoading, error, filterStatus, limit, offset } =
-    useAppSelector((s) => s.alerts);
+  const {
+    selectedAlertEvents,
+    eventsLoading,
+    updateLoading,
+    error,
+    filterStatus,
+    limit,
+    offset,
+  } = useAppSelector((s) => s.alerts);
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -91,57 +98,41 @@ export default function AlertDetailModal({ alert }: Props) {
       />
       <div className="relative w-full max-w-2xl rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] flex flex-col max-h-[90vh] animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-ink-200/80">
-          <div className="flex items-start gap-3 flex-1 pr-4">
-            <div className="w-8 h-8 rounded-lg bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center shrink-0">
-              <Zap size={16} className="text-signal-orange" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`badge ${statusCfg.badge}`}>
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`}
-                  />
-                  {statusCfg.label}
+        <div className="p-6">
+          {/* Row 1: status (left) + created by + updated time + close (right) */}
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <span className={`badge ${statusCfg.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+              {statusCfg.label}
+            </span>
+            <div className="flex items-center gap-4 text-xs text-ink-500">
+              <div className="flex items-center gap-1.5">
+                <User size={12} />
+                Created by{" "}
+                <span className="text-ink-700 font-medium">
+                  {alert.createdBy?.name}
                 </span>
               </div>
-              <h2 className="text-lg font-semibold text-ink-700 leading-tight">
-                {alert.title}
-              </h2>
-              {alert.description && (
-                <p className="text-ink-600 text-sm mt-1">{alert.description}</p>
-              )}
+              <div className="flex items-center gap-1.5 text-ink-700">
+                <Clock size={12} /> {formatDateTime(alert.createdAt)}
+              </div>
+              <button
+                onClick={handleClose}
+                className="btn-ghost p-3 shrink-0 rounded-lg hover:bg-ink-100 -m-3 ml-2"
+              >
+                <X size={20} />
+              </button>
             </div>
           </div>
-          <button onClick={handleClose} className="btn-ghost p-1.5 shrink-0">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Meta */}
-        <div className="px-6 py-3 border-b border-ink-200/80 flex items-center gap-4 text-xs text-ink-500 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <User size={12} />
-            Created by{" "}
-            <span className="text-ink-700 font-medium">
-              {alert.createdBy?.name}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock size={12} /> {formatDateTime(alert.createdAt)}
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Activity size={12} />
-            <span className="font-mono">{alert.id.slice(0, 8)}...</span>
+          {/* Row 2: title */}
+          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-3 items-baseline">
+            <span className="text-sm font-medium text-ink-500">Title</span>
+            <span className="text-[1rem] text-ink-700">{alert.title}</span>
           </div>
         </div>
 
         {/* Events timeline */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <h3 className="text-sm font-semibold text-ink-600 mb-4 flex items-center gap-2 uppercase tracking-wider">
-            <Activity size={14} /> Audit Trail
-          </h3>
-
+        <div className="flex-1 overflow-y-auto p-6 pt-0">
           {eventsLoading ? (
             <div className="flex items-center gap-2 text-ink-500 py-8 justify-center">
               <Loader2 size={16} className="animate-spin" /> Loading events...
@@ -169,54 +160,53 @@ export default function AlertDetailModal({ alert }: Props) {
                         <span className="w-2 h-2 rounded-full bg-current" />
                       )}
                     </div>
-                    <div className="flex-1 bg-ink-50 rounded-xl p-3 border border-ink-200">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {event.fromStatus ? (
-                              <div className="flex items-center gap-1.5 text-xs">
-                                <span
-                                  className={`badge ${statusConfig[event.fromStatus].badge} py-0.5`}
-                                >
-                                  {statusConfig[event.fromStatus].label}
-                                </span>
-                                <ArrowRight
-                                  size={10}
-                                  className="text-ink-500"
-                                />
-                                <span
-                                  className={`badge ${statusConfig[event.toStatus].badge} py-0.5`}
-                                >
-                                  {statusConfig[event.toStatus].label}
-                                </span>
-                              </div>
-                            ) : (
+                    <div className="flex-1 min-w-0 bg-ink-50 rounded-xl p-3 border border-ink-200">
+                      {/* Row 1: status + user + time */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 text-xs shrink-0">
+                          {event.fromStatus ? (
+                            <>
                               <span
-                                className={`badge ${statusConfig[event.toStatus].badge} py-0.5 text-xs`}
+                                className={`badge ${statusConfig[event.fromStatus].badge} py-0.5`}
                               >
-                                Alert created →{" "}
+                                {statusConfig[event.fromStatus].label}
+                              </span>
+                              <ArrowRight size={10} className="text-ink-500" />
+                              <span
+                                className={`badge ${statusConfig[event.toStatus].badge} py-0.5`}
+                              >
                                 {statusConfig[event.toStatus].label}
                               </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-ink-400">
-                            <User size={10} />
-                            <span className="text-ink-700">
-                              {event.user?.name}
+                            </>
+                          ) : (
+                            <span
+                              className={`badge ${statusConfig[event.toStatus].badge} py-0.5 rounded-full font-semibold`}
+                            >
+                              Create
                             </span>
-                            <span>·</span>
-                            <span>{event.user?.email}</span>
-                          </div>
-                          {event.note && (
-                            <p className="text-ink-600 text-sm mt-2 bg-ink-100 rounded-lg px-3 py-2 border-l-2 border-signal-orange/40">
-                              "{event.note}"
-                            </p>
                           )}
                         </div>
-                        <span className="text-ink-500 text-xs whitespace-nowrap">
-                          {formatRelativeTime(event.createdAt)}
-                        </span>
+                        <div className="flex items-center gap-1.5 text-xs text-ink-500 shrink-0">
+                          <User size={10} />
+                          <span className="text-ink-700">
+                            {event.user?.name}
+                          </span>
+                          <span className="text-ink-400">·</span>
+                          <span className="text-ink-500 whitespace-nowrap">
+                            {formatDateTime(event.createdAt)}
+                          </span>
+                        </div>
                       </div>
+                      {/* Row 2: description */}
+                      {alert.description ? (
+                        <p className="text-ink-600 text-sm mt-2 bg-ink-100 rounded-lg px-3 py-2  break-words">
+                          {alert.description}
+                        </p>
+                      ) : event.note ? (
+                        <p className="text-ink-600 text-sm mt-2 bg-ink-100 rounded-lg px-3 py-2  break-words">
+                          "{event.note}"
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 ))}

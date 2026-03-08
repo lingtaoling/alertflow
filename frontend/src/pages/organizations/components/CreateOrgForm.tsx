@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { orgsApi } from '../../../services/organizations.service';
-import ModalForm from '../../../components/ui/ModalForm';
-import FormField from '../../../components/ui/FormField';
-import { Building2, Zap } from 'lucide-react';
+import { useState } from "react";
+import { orgsApi } from "../../../services/organizations.service";
+import { validateText } from "../../../utils/formValidation";
+import ModalForm from "../../../components/ui/ModalForm";
+import FormField from "../../../components/ui/FormField";
+import { Building2, Zap } from "lucide-react";
 
 interface Props {
   onClose: () => void;
@@ -10,17 +11,28 @@ interface Props {
 }
 
 export default function CreateOrgForm({ onClose, onSuccess }: Props) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
-    setError('');
+    setError("");
+
+    const nameResult = validateText(name, {
+      minLength: 1,
+      maxLength: 30,
+      fieldName: "Organization name",
+      required: true,
+    });
+    if (!nameResult.valid) {
+      setError(nameResult.error ?? "Invalid input");
+      return;
+    }
+
     setLoading(true);
     try {
-      await orgsApi.create(name.trim());
+      await orgsApi.create(nameResult.sanitized!);
       onSuccess?.();
       onClose();
     } catch (e: any) {
@@ -43,7 +55,16 @@ export default function CreateOrgForm({ onClose, onSuccess }: Props) {
       onSubmit={handleSubmit}
       submitIcon={<Zap size={14} />}
     >
-      <FormField name="name" label="Organization name" type="text" required placeholder="e.g. Acme Corp" value={name} onChange={setName} autoFocus />
+      <FormField
+        name="name"
+        label="Organization name"
+        type="text"
+        required
+        placeholder="maximum 30 characters"
+        value={name}
+        onChange={setName}
+        autoFocus
+      />
     </ModalForm>
   );
 }
