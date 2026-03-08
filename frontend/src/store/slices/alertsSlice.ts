@@ -62,9 +62,12 @@ export const createAlert = createAsyncThunk(
 
 export const updateAlertStatus = createAsyncThunk(
   'alerts/updateStatus',
-  async ({ id, status, note }: { id: string; status: AlertStatus; note?: string }, { rejectWithValue }) => {
+  async (
+    { id, status, version, note }: { id: string; status: AlertStatus; version: number; note?: string },
+    { rejectWithValue },
+  ) => {
     try {
-      return await alertsApi.updateStatus(id, { status, note });
+      return await alertsApi.updateStatus(id, { status, version, note });
     } catch (e: any) {
       return rejectWithValue(e.message);
     }

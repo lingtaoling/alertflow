@@ -3,7 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AlertStatus } from '@prisma/client';
@@ -137,13 +137,21 @@ export class AlertsService {
 
   /**
    * Update alert status — validates workflow transitions and creates audit event.
+   *
+   * Concurrency safety via optimistic locking:
+   *   The client sends the `version` it last read. The UPDATE WHERE clause
+   *   includes `version = dto.version`, so it only succeeds if nobody else
+   *   incremented the version since the client loaded the alert.
+   *   If rowCount = 0 → 409 Conflict.
    */
   async updateStatus(orgId: string, userId: string, alertId: string, dto: UpdateAlertStatusDto) {
-    this.logger.log(`Updating alert ${alertId} status to ${dto.status} by user ${userId}`);
+    this.logger.log(`Updating alert ${alertId} status to ${dto.status} by user ${userId} (v${dto.version})`);
 
-    // Fetch with org scope — tenant isolation enforced
+    // Verify the alert exists and belongs to this org (tenant isolation).
+    // We still need to read current status for the transition validation.
     const alert = await this.prisma.alert.findFirst({
       where: { id: alertId, orgId },
+      select: { id: true, status: true, version: true },
     });
 
     if (!alert) {
@@ -159,12 +167,27 @@ export class AlertsService {
       );
     }
 
-    // Atomic update + audit event
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const updatedAlert = await tx.alert.update({
-        where: { id: alertId },
-        data: { status: dto.status },
+    // Atomic version-gated update.
+    // updateMany returns { count } without throwing when no row matches.
+    const { count } = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.alert.updateMany({
+        where: {
+          id: alertId,
+          orgId,
+          version: dto.version, // optimistic lock: only update if version still matches
+        },
+        data: {
+          status: dto.status,
+          version: { increment: 1 }, // bump so the next concurrent writer loses
+        },
       });
+
+      if (result.count === 0) {
+        // Another user already changed the alert — version no longer matches
+        throw new ConflictException(
+          `Alert ${alertId} was already updated by another user. Please refresh and try again.`,
+        );
+      }
 
       await tx.alertEvent.create({
         data: {
@@ -176,10 +199,10 @@ export class AlertsService {
         },
       });
 
-      return updatedAlert;
+      return result;
     });
 
-    this.logger.log(`Alert ${alertId}: ${alert.status} → ${dto.status}`);
+    this.logger.log(`Alert ${alertId}: ${alert.status} → ${dto.status} (v${dto.version} → v${dto.version + 1}, matched ${count} row)`);
     return this.findOne(orgId, alertId);
   }
 

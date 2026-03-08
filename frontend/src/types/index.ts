@@ -24,6 +24,7 @@ export interface Alert {
   title: string;
   description?: string;
   status: AlertStatus;
+  version: number;
   orgId: string;
   createdById: string;
   createdAt: string;

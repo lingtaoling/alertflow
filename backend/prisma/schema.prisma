@@ -52,6 +52,7 @@ model Alert {
   title       String
   description String?
   status      AlertStatus @default(NEW)
+  version     Int         @default(1)
   orgId       String      @map("org_id") @db.Uuid
   createdById String?     @map("created_by_id") @db.Uuid
   createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()

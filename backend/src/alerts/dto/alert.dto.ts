@@ -6,6 +6,8 @@ import {
   MaxLength,
   MinLength,
   IsIn,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AlertStatus } from '@prisma/client';
@@ -33,6 +35,14 @@ export class UpdateAlertStatusDto {
     message: 'Status must be ACKNOWLEDGED or RESOLVED',
   })
   status: AlertStatus;
+
+  @ApiProperty({
+    example: 1,
+    description: 'The version number the client last saw. Used for optimistic locking.',
+  })
+  @IsInt()
+  @Min(1)
+  version: number;
 
   @ApiPropertyOptional({ example: 'Investigated and confirmed. Assigning to team.' })
   @IsOptional()

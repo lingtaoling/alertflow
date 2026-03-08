@@ -13,7 +13,7 @@ export const alertsApi = {
   get: (id: string) =>
     apiClient.get<Alert>(`/alerts/${id}`).then((r) => r.data),
 
-  updateStatus: (id: string, data: { status: AlertStatus; note?: string }) =>
+  updateStatus: (id: string, data: { status: AlertStatus; version: number; note?: string }) =>
     apiClient.patch<Alert>(`/alerts/${id}/status`, data).then((r) => r.data),
 
   getEvents: (id: string) =>

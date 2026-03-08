@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "alerts" ADD COLUMN  "version" INTEGER NOT NULL DEFAULT 1;
