@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import LoginBgCanvas from './components/LoginBgCanvas';
-import LoginForm from './components/LoginForm';
-import logoIcon from '../../assets/images/alertflow-icon1.svg';
+import { useState } from "react";
+import LoginBgCanvas from "./components/LoginBgCanvas";
+import LoginForm from "./components/LoginForm";
+import logoIcon from "../../assets/images/alertflow-icon1.svg";
 
 export default function LoginPage() {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -25,7 +25,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-ink-500 text-sm mt-6">
-          Don&apos;t have an account?{' '}
+          Don&apos;t have an account?{" "}
           <span className="relative inline-block">
             <button
               type="button"
@@ -46,6 +46,15 @@ export default function LoginPage() {
               </span>
             )}
           </span>
+        </p>
+        <p className="text-center text-ink-500 text-xs mt-6">
+          admin@alertflow.com All access
+          <br />
+          user1@alertflow.com Tenant 1
+          <br />
+          user2@alertflow.com Tenant 2
+          <br />
+          password: Demouser123
         </p>
       </div>
     </div>

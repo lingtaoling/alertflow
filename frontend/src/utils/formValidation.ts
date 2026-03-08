@@ -36,8 +36,8 @@ export interface ValidationResult {
 /** Allowed chars when special characters are not permitted: letters, numbers, spaces, . , - ' ! ? ( ) : / & */
 const ALLOWED_TEXT_PATTERN = /^[a-zA-Z0-9\s.,\-'!?():/&]*$/;
 
-/** Name pattern: letters, spaces, hyphen, apostrophe only (no numbers or punctuation) */
-const NAME_PATTERN = /^[a-zA-Z\s\-']*$/;
+/** Name pattern: letters, numbers, spaces, hyphen, apostrophe */
+const NAME_PATTERN = /^[a-zA-Z0-9\s\-']*$/;
 
 /** Extended pattern for descriptions: adds # _ @ %*/
 const EXTENDED_TEXT_PATTERN = /^[a-zA-Z0-9\s.,\-'!?()%:/&@#_]*$/;
