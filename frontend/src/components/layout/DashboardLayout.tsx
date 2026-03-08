@@ -1,18 +1,18 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { clearSession } from '../../store/slices/authSlice';
+import { useAuth } from '../../hooks/useAuth';
 import { NAV_ITEMS } from './nav.config';
 import { Zap, Building2, User, Shield, LogOut } from 'lucide-react';
 
 export default function DashboardLayout() {
-  const dispatch = useAppDispatch();
+  const { org, user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
-  const { org, user } = useAppSelector((s) => s.auth);
 
   function handleLogout() {
-    dispatch(clearSession());
+    logout();
     navigate('/login');
   }
+
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,7 +27,7 @@ export default function DashboardLayout() {
             </NavLink>
 
             <nav className="flex items-center gap-1 flex-1 justify-center">
-              {NAV_ITEMS.map((item) => (
+              {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}

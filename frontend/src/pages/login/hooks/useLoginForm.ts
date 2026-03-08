@@ -5,8 +5,8 @@ import { authApi } from '../../../services/auth.service';
 
 export function useLoginForm() {
   const dispatch = useAppDispatch();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('tester1@demo.com');
+  const [password, setPassword] = useState('Demouser123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

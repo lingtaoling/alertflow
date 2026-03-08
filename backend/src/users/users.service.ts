@@ -54,16 +54,19 @@ export class UsersService {
   }
 
   async findByOrg(orgId: string | null) {
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: orgId ? { orgId } : {},
       select: {
         id: true,
         email: true,
         name: true,
+        role: true,
         orgId: true,
         createdAt: true,
+        org: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
+    return users.map(({ org, ...u }) => ({ ...u, organization: org ?? undefined }));
   }
 }

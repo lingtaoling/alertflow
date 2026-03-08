@@ -25,4 +25,5 @@ export interface PaginatedResult<T> {
   limit: number;
   offset: number;
   hasMore: boolean;
+  counts?: { total: number; NEW: number; ACKNOWLEDGED: number; RESOLVED: number };
 }

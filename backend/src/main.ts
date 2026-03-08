@@ -1,16 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
-  });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
@@ -28,9 +26,6 @@ async function bootstrap() {
 
   // Global filters
   app.useGlobalFilters(new HttpExceptionFilter());
-
-  // Global interceptors
-  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // CORS
   app.enableCors({
@@ -51,8 +46,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(port);
-  logger.log(`🚀 Application running on http://localhost:${port}`);
-  logger.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
+  const logger = app.get(Logger);
+  logger.log(`Application running on http://localhost:${port}`);
+  logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

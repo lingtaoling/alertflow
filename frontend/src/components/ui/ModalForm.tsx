@@ -51,7 +51,7 @@ export default function ModalForm({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] p-6 animate-slide-up shadow-2xl">
+      <div className="relative w-full max-w-lg rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] p-6 animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center">

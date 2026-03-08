@@ -156,7 +156,7 @@ export default function LoginBgCanvas() {
       // Symbol dimensions relative to triangle size — kept small
       const exclamH = triH * 0.18; // bar height
       const exclamW = baseW * 0.045; // bar width
-      const dotSize = exclamW * 1.1; // square dot
+      const dotSize = exclamW * 1.1; // triangle dot
       const gap = exclamH * 0.13; // gap between bar and dot
 
       ctx2.save();
@@ -187,11 +187,14 @@ export default function LoginBgCanvas() {
       ]);
       ctx2.fill();
 
-      // Draw dot — square with slight rounding, below the bar
+      // Draw dot — triangle (apex up, base down), below the bar
       const dotX = -dotSize / 2;
       const dotY = barY + exclamH + gap;
       ctx2.beginPath();
-      ctx2.roundRect(dotX, dotY, dotSize, dotSize, dotSize * 0.2);
+      ctx2.moveTo(dotX + dotSize / 2, dotY);
+      ctx2.lineTo(dotX + dotSize, dotY + dotSize);
+      ctx2.lineTo(dotX, dotY + dotSize);
+      ctx2.closePath();
       ctx2.fill();
 
       ctx2.restore();

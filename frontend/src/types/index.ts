@@ -7,10 +7,13 @@ export interface Organization {
   _count?: { users: number; alerts: number };
 }
 
+export type UserRole = 'admin' | 'normal';
+
 export interface User {
   id: string;
   email: string;
   name: string;
+  role?: UserRole;
   orgId: string;
   createdAt: string;
   organization?: { id: string; name: string };
@@ -46,6 +49,8 @@ export interface PaginatedResult<T> {
   limit: number;
   offset: number;
   hasMore: boolean;
+  /** Optional: total counts by status (alerts list) — unchanged by filter/pagination */
+  counts?: { total: number; NEW: number; ACKNOWLEDGED: number; RESOLVED: number };
 }
 
 export interface ApiError {

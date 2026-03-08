@@ -11,6 +11,7 @@ import { AlertStatus } from '../../../types';
 export function useAlerts() {
   const dispatch = useAppDispatch();
   const alertsState = useAppSelector((s) => s.alerts);
+  const userId = useAppSelector((s) => s.auth.userId);
   const { filterStatus, limit, offset } = alertsState;
 
   function load() {
@@ -19,7 +20,7 @@ export function useAlerts() {
 
   useEffect(() => {
     load();
-  }, [filterStatus, offset, limit]);
+  }, [userId, filterStatus, offset, limit]);
 
   return {
     ...alertsState,

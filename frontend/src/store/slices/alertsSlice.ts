@@ -1,11 +1,14 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 import { Alert, AlertEvent, AlertStatus, PaginatedResult } from '../../types';
 import { alertsApi } from '../../services/alerts.service';
+import { clearSession } from './authSlice';
 
 interface AlertsState {
   items: Alert[];
   total: number;
   hasMore: boolean;
+  /** Total counts by status — unchanged by filter/pagination */
+  counts: { total: number; NEW: number; ACKNOWLEDGED: number; RESOLVED: number } | null;
   loading: boolean;
   error: string | null;
   selectedAlert: Alert | null;
@@ -22,6 +25,7 @@ const initialState: AlertsState = {
   items: [],
   total: 0,
   hasMore: false,
+  counts: null,
   loading: false,
   error: null,
   selectedAlert: null,
@@ -120,6 +124,7 @@ const alertsSlice = createSlice({
         state.items = action.payload.data;
         state.total = action.payload.total;
         state.hasMore = action.payload.hasMore;
+        if (action.payload.counts) state.counts = action.payload.counts;
       })
       .addCase(fetchAlerts.rejected, (state, action) => {
         state.loading = false;
@@ -131,6 +136,10 @@ const alertsSlice = createSlice({
         state.createLoading = false;
         state.items.unshift(action.payload);
         state.total += 1;
+        if (state.counts) {
+          state.counts.total += 1;
+          state.counts.NEW += 1;
+        }
       })
       .addCase(createAlert.rejected, (state, action) => {
         state.createLoading = false;
@@ -141,8 +150,13 @@ const alertsSlice = createSlice({
       .addCase(updateAlertStatus.fulfilled, (state, action: PayloadAction<Alert>) => {
         state.updateLoading = false;
         const idx = state.items.findIndex((a) => a.id === action.payload.id);
+        const oldAlert = idx !== -1 ? state.items[idx] : state.selectedAlert;
         if (idx !== -1) state.items[idx] = action.payload;
         if (state.selectedAlert?.id === action.payload.id) state.selectedAlert = action.payload;
+        if (state.counts && oldAlert && oldAlert.status !== action.payload.status) {
+          state.counts[oldAlert.status] -= 1;
+          state.counts[action.payload.status] += 1;
+        }
       })
       .addCase(updateAlertStatus.rejected, (state, action) => {
         state.updateLoading = false;
@@ -158,7 +172,9 @@ const alertsSlice = createSlice({
         state.eventsLoading = false;
         state.selectedAlertEvents = action.payload;
       })
-      .addCase(fetchAlertEvents.rejected, (state) => { state.eventsLoading = false; });
+      .addCase(fetchAlertEvents.rejected, (state) => { state.eventsLoading = false; })
+      // Reset alerts when user switches (logout)
+      .addMatcher(isAnyOf(clearSession), () => initialState);
   },
 });
 

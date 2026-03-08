@@ -76,7 +76,8 @@ export class AlertsService {
       where.status = status;
     }
 
-    const [data, total] = await Promise.all([
+    const baseWhere = orgId ? { orgId } : {};
+    const [data, total, countByStatus] = await Promise.all([
       this.prisma.alert.findMany({
         where,
         take: limit,
@@ -88,7 +89,19 @@ export class AlertsService {
         },
       }),
       this.prisma.alert.count({ where }),
+      this.prisma.alert.groupBy({
+        by: ['status'],
+        where: baseWhere,
+        _count: { status: true },
+      }),
     ]);
+
+    const counts = {
+      total: countByStatus.reduce((s, r) => s + r._count.status, 0),
+      NEW: countByStatus.find((r) => r.status === 'NEW')?._count.status ?? 0,
+      ACKNOWLEDGED: countByStatus.find((r) => r.status === 'ACKNOWLEDGED')?._count.status ?? 0,
+      RESOLVED: countByStatus.find((r) => r.status === 'RESOLVED')?._count.status ?? 0,
+    };
 
     return {
       data,
@@ -96,6 +109,7 @@ export class AlertsService {
       limit,
       offset,
       hasMore: offset + data.length < total,
+      counts,
     };
   }
 

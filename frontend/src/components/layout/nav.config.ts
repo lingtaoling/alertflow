@@ -4,10 +4,11 @@ export interface NavItem {
   path: string;
   label: string;
   icon: LucideIcon;
+  adminOnly?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { path: '/alerts', label: 'Alerts', icon: AlertCircle },
-  { path: '/users', label: 'Users', icon: Users },
-  { path: '/organizations', label: 'Organizations', icon: Building2 },
+  { path: '/alerts',        label: 'Alerts',        icon: AlertCircle  },
+  { path: '/users',         label: 'Users',         icon: Users,        adminOnly: true },
+  { path: '/organizations', label: 'Organizations', icon: Building2,    adminOnly: true },
 ];

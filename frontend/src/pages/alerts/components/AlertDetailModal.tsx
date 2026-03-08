@@ -5,7 +5,7 @@ import { Alert, AlertStatus } from '../../../types';
 import { statusConfig, nextStatus, nextStatusLabel } from '../../../utils/alertStatus';
 import { formatDateTime, formatRelativeTime } from '../../../utils/format';
 import {
-  X, Clock, User, ArrowRight, CheckCircle2, Loader2, AlertTriangle, Activity,
+  X, Clock, User, ArrowRight, CheckCircle2, Loader2, AlertTriangle, Activity, Zap,
 } from 'lucide-react';
 
 interface Props {
@@ -44,21 +44,26 @@ export default function AlertDetailModal({ alert }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink-700/30 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative w-full max-w-2xl gradient-border rounded-2xl bg-white flex flex-col max-h-[90vh] animate-slide-up shadow-2xl">
+      <div className="absolute inset-0 bg-ink-700/60 backdrop-blur-sm" onClick={handleClose} />
+      <div className="relative w-full max-w-2xl rounded-2xl border border-ink-200 bg-gradient-to-br from-[#edcba5] to-[#ebeae5] flex flex-col max-h-[90vh] animate-slide-up shadow-[0_20px_20px_-8px_rgb(148_134_113_/_55%),0_24px_24px_-16px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.08)]">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-ink-200">
-          <div className="flex-1 pr-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`badge ${statusCfg.badge}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
-                {statusCfg.label}
-              </span>
+        <div className="flex items-start justify-between p-6 border-b border-ink-200/80">
+          <div className="flex items-start gap-3 flex-1 pr-4">
+            <div className="w-8 h-8 rounded-lg bg-signal-orange/20 border border-signal-orange/40 flex items-center justify-center shrink-0">
+              <Zap size={16} className="text-signal-orange" />
             </div>
-            <h2 className="text-lg font-semibold text-ink-700 leading-tight">{alert.title}</h2>
-            {alert.description && (
-              <p className="text-ink-400 text-sm mt-1">{alert.description}</p>
-            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`badge ${statusCfg.badge}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+                  {statusCfg.label}
+                </span>
+              </div>
+              <h2 className="text-lg font-semibold text-ink-700 leading-tight">{alert.title}</h2>
+              {alert.description && (
+                <p className="text-ink-600 text-sm mt-1">{alert.description}</p>
+              )}
+            </div>
           </div>
           <button onClick={handleClose} className="btn-ghost p-1.5 shrink-0">
             <X size={16} />
@@ -66,7 +71,7 @@ export default function AlertDetailModal({ alert }: Props) {
         </div>
 
         {/* Meta */}
-        <div className="px-6 py-3 border-b border-ink-200 flex items-center gap-4 text-xs text-ink-500 flex-wrap">
+        <div className="px-6 py-3 border-b border-ink-200/80 flex items-center gap-4 text-xs text-ink-500 flex-wrap">
           <div className="flex items-center gap-1.5">
             <User size={12} />
             Created by <span className="text-ink-700 font-medium">{alert.createdBy?.name}</span>
