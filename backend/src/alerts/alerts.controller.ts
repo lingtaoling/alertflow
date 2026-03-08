@@ -24,7 +24,7 @@ import { AlertsService } from './alerts.service';
 import { CreateAlertDto, UpdateAlertStatusDto, ListAlertsQueryDto } from './dto/alert.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrgRequiredGuard } from '../common/guards/org-required.guard';
-import { OrgId, UserId } from '../common/decorators/tenant.decorator';
+import { OrgId, UserId, Role } from '../common/decorators/tenant.decorator';
 
 @ApiTags('Alerts')
 @Controller('alerts')
@@ -55,21 +55,22 @@ export class AlertsController {
   @ApiQuery({ name: 'offset', required: false, type: Number })
   async findAll(
     @OrgId() orgId: string | null,
+    @Role() role: string,
     @Query() query: ListAlertsQueryDto,
   ) {
+    if (role !== 'admin' && !orgId) {
+      throw new BadRequestException('Organization required to fetch alerts list');
+    }
     return this.alertsService.findAll(orgId, query);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a single alert (org-scoped)' })
+  @ApiOperation({ summary: 'Get a single alert (org-scoped; admin: any org)' })
   @ApiParam({ name: 'id', type: String })
   async findOne(
     @OrgId() orgId: string | null,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    if (!orgId) {
-      throw new BadRequestException('Organization required to view alert');
-    }
     return this.alertsService.findOne(orgId, id);
   }
 
@@ -84,9 +85,6 @@ export class AlertsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateAlertStatusDto,
   ) {
-    if (!orgId) {
-      throw new BadRequestException('Organization required to update alert');
-    }
     return this.alertsService.updateStatus(orgId, userId, id, dto);
   }
 
@@ -97,9 +95,6 @@ export class AlertsController {
     @OrgId() orgId: string | null,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    if (!orgId) {
-      throw new BadRequestException('Organization required to view alert events');
-    }
     return this.alertsService.getEvents(orgId, id);
   }
 }

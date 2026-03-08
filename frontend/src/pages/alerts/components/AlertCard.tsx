@@ -6,6 +6,7 @@ import { Clock, User } from "lucide-react";
 interface Props {
   alert: Alert;
   onClick: () => void;
+  showOrg?: boolean;
 }
 
 const statusHoverBg: Record<string, string> = {
@@ -14,7 +15,7 @@ const statusHoverBg: Record<string, string> = {
   RESOLVED: "hover:bg-signal-green/5",
 };
 
-export default function AlertCard({ alert, onClick }: Props) {
+export default function AlertCard({ alert, onClick, showOrg }: Props) {
   const status = statusConfig[alert.status];
 
   return (
@@ -49,6 +50,11 @@ export default function AlertCard({ alert, onClick }: Props) {
         <span className="flex items-center gap-1 text-xs text-ink-500 shrink-0">
           <Clock size={10} /> {formatRelativeTime(alert.updatedAt)}
         </span>
+        {showOrg && alert.org && (
+          <span className="text-xs text-ink-500 shrink-0 truncate max-w-[8rem]">
+            {alert.org.name}
+          </span>
+        )}
         <span
           className={`badge ${status.badge} py-0.5 px-2 text-xs min-w-[5.5rem] w-[5.5rem] justify-center shrink-0`}
         >
@@ -85,6 +91,9 @@ export default function AlertCard({ alert, onClick }: Props) {
           <span className="flex items-center gap-1">
             <Clock size={10} /> {formatRelativeTime(alert.updatedAt)}
           </span>
+          {showOrg && alert.org && (
+            <span className="text-xs text-ink-500">{alert.org.name}</span>
+          )}
           <span
             className={`badge ${status.badge} py-0.5 px-2 text-xs min-w-[5.5rem] w-[5.5rem] justify-center`}
           >

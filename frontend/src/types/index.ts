@@ -30,6 +30,7 @@ export interface Alert {
   createdAt: string;
   updatedAt: string;
   createdBy?: { id: string; name: string; email: string };
+  org?: { id: string; name: string };
   _count?: { alertEvents: number };
 }
 

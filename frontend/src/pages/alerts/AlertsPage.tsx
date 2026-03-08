@@ -184,6 +184,7 @@ export default function AlertsPage() {
               key={alert.id}
               alert={alert}
               onClick={() => handleSelectAlert(alert.id)}
+              showOrg={isAdmin}
             />
           ))}
         </div>

@@ -91,6 +91,7 @@ export class AlertsService {
         orderBy: { createdAt: 'desc' },
         include: {
           createdBy: { select: { id: true, name: true, email: true } },
+          org: { select: { id: true, name: true } },
           _count: { select: { alertEvents: true } },
         },
       }),
@@ -120,16 +121,15 @@ export class AlertsService {
   }
 
   /**
-   * Get a single alert — enforces org ownership.
+   * Get a single alert — enforces org ownership for normal users; admin can access any.
    */
-  async findOne(orgId: string, alertId: string) {
+  async findOne(orgId: string | null, alertId: string) {
+    const where = orgId ? { id: alertId, orgId } : { id: alertId };
     const alert = await this.prisma.alert.findFirst({
-      where: {
-        id: alertId,
-        orgId, // Tenant isolation: can only access alerts in own org
-      },
+      where,
       include: {
         createdBy: { select: { id: true, name: true, email: true } },
+        org: { select: { id: true, name: true } },
         _count: { select: { alertEvents: true } },
       },
     });
@@ -150,14 +150,13 @@ export class AlertsService {
    *   incremented the version since the client loaded the alert.
    *   If rowCount = 0 → 409 Conflict.
    */
-  async updateStatus(orgId: string, userId: string, alertId: string, dto: UpdateAlertStatusDto) {
+  async updateStatus(orgId: string | null, userId: string, alertId: string, dto: UpdateAlertStatusDto) {
     this.logger.log(`Updating alert ${alertId} status to ${dto.status} by user ${userId} (v${dto.version})`);
 
-    // Verify the alert exists and belongs to this org (tenant isolation).
-    // We still need to read current status for the transition validation.
+    const alertWhere = orgId ? { id: alertId, orgId } : { id: alertId };
     const alert = await this.prisma.alert.findFirst({
-      where: { id: alertId, orgId },
-      select: { id: true, status: true, version: true },
+      where: alertWhere,
+      select: { id: true, status: true, version: true, orgId: true },
     });
 
     if (!alert) {
@@ -175,13 +174,12 @@ export class AlertsService {
 
     // Atomic version-gated update.
     // updateMany returns { count } without throwing when no row matches.
+    const updateWhere = orgId
+      ? { id: alertId, orgId, version: dto.version }
+      : { id: alertId, version: dto.version };
     const { count } = await this.prisma.$transaction(async (tx) => {
       const result = await tx.alert.updateMany({
-        where: {
-          id: alertId,
-          orgId,
-          version: dto.version, // optimistic lock: only update if version still matches
-        },
+        where: updateWhere,
         data: {
           status: dto.status,
           version: { increment: 1 }, // bump so the next concurrent writer loses
@@ -209,18 +207,18 @@ export class AlertsService {
     });
 
     this.logger.log(`Alert ${alertId}: ${alert.status} → ${dto.status} (v${dto.version} → v${dto.version + 1}, matched ${count} row)`);
-    const full = await this.findOne(orgId, alertId);
-    this.alertsGateway.emitAlertEvent(orgId, 'alert:updated', full);
+    const full = await this.findOne(alert.orgId, alertId);
+    this.alertsGateway.emitAlertEvent(alert.orgId, 'alert:updated', full);
     return full;
   }
 
   /**
-   * Get audit events for an alert — enforces org ownership.
+   * Get audit events for an alert — enforces org ownership for normal users; admin can access any.
    */
-  async getEvents(orgId: string, alertId: string) {
-    // First verify the alert belongs to this org — tenant isolation
+  async getEvents(orgId: string | null, alertId: string) {
+    const where = orgId ? { id: alertId, orgId } : { id: alertId };
     const alert = await this.prisma.alert.findFirst({
-      where: { id: alertId, orgId },
+      where,
       select: { id: true },
     });
 

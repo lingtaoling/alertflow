@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { NAV_ITEMS } from "./nav.config";
-import { Zap, Building2, User, Shield, LogOut } from "lucide-react";
+import { Shield, LogOut, Menu, X } from "lucide-react";
 import logo from "../../assets/images/alertflow-icon1.svg";
 
 export default function DashboardLayout() {
   const { org, user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function handleLogout() {
     logout();
@@ -19,8 +21,8 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-ink-200 bg-white/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4">
+      <header className="border-b border-ink-200 bg-white/95 backdrop-blur-md sticky top-0 z-30 relative">
+        <div className="max-w-6xl mx-auto px-4 relative">
           <div className="h-16 flex items-center justify-between gap-4">
             <NavLink to="/alerts" className="flex items-center gap-2 shrink-0">
               <img src={logo} alt="" className="h-10 w-auto logo-animated" />
@@ -29,7 +31,8 @@ export default function DashboardLayout() {
               </span>
             </NavLink>
 
-            <nav className="flex items-center gap-1 flex-1 justify-center">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
               {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -45,6 +48,15 @@ export default function DashboardLayout() {
             </nav>
 
             <div className="flex items-center gap-2 shrink-0">
+              {/* Hamburger button - small screens only */}
+              <button
+                className="md:hidden btn-ghost p-2 text-ink-600 hover:text-ink-800"
+                onClick={() => setMobileMenuOpen((o) => !o)}
+                title={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
               <div className="hidden sm:flex items-center gap-1.5 bg-ink-100 border border-ink-200 rounded-full px-3 py-1.5 text-sm">
                 <Shield size={11} className="text-signal-orange" />
                 <span className="text-ink-700 font-medium">
@@ -60,6 +72,34 @@ export default function DashboardLayout() {
               </button>
             </div>
           </div>
+
+          {/* Mobile menu - floating dropdown, small screens only */}
+          {mobileMenuOpen && (
+            <>
+              <div
+                className="md:hidden fixed inset-0 z-40 bg-black/20"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-hidden="true"
+              />
+              <div className="md:hidden absolute right-4 top-full mt-2 z-50 min-w-[12rem] rounded-xl border border-ink-200 bg-white py-2 shadow-lg animate-fade-in">
+                <nav className="flex flex-col gap-0.5">
+                  {visibleNavItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `nav-link ${isActive ? "nav-link-active" : ""}`.trim()
+                      }
+                    >
+                      <item.icon size={14} />
+                      <span className="nav-link-text">{item.label}</span>
+                    </NavLink>
+                  ))}
+                </nav>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
