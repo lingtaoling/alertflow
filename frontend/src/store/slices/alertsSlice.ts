@@ -111,6 +111,7 @@ const alertsSlice = createSlice({
     },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
+      state.filterStatus = '';
       state.offset = 0;
     },
     clearSelected(state) {

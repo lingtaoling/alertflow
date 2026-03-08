@@ -40,6 +40,7 @@ export default function AlertDetailModal({ alert }: Props) {
     updateLoading,
     error,
     filterStatus,
+    searchQuery,
     limit,
     offset,
   } = useAppSelector((s) => s.alerts);
@@ -61,7 +62,14 @@ export default function AlertDetailModal({ alert }: Props) {
   }, [error, alert.id, dispatch]);
 
   function handleClose() {
-    dispatch(fetchAlerts({ status: filterStatus || undefined, limit, offset }));
+    dispatch(
+      fetchAlerts({
+        status: filterStatus || undefined,
+        search: (searchQuery ?? "").trim() || undefined,
+        limit,
+        offset,
+      }),
+    );
     dispatch(clearSelected());
   }
 

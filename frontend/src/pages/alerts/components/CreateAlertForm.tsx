@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { createAlert, fetchAlerts } from "../../../store/slices/alertsSlice";
+import {
+  createAlert,
+  fetchAlerts,
+  setFilterStatus,
+  setOffset,
+  setSearchQuery,
+} from "../../../store/slices/alertsSlice";
 import { orgsApi } from "../../../services/organizations.service";
 import ModalForm from "../../../components/ui/ModalForm";
 import FormField from "../../../components/ui/FormField";
@@ -79,14 +85,10 @@ export default function CreateAlertForm({ onClose }: Props) {
     };
     const result = await dispatch(createAlert(payload));
     if (createAlert.fulfilled.match(result)) {
-      dispatch(
-        fetchAlerts({
-          status: filterStatus || undefined,
-          search: (searchQuery ?? "").trim() || undefined,
-          limit,
-          offset,
-        }),
-      );
+      dispatch(setFilterStatus(""));
+      dispatch(setSearchQuery(""));
+      dispatch(setOffset(0));
+      dispatch(fetchAlerts({ limit, offset: 0 }));
       onClose();
     } else {
       setLocalError(result.payload as string);

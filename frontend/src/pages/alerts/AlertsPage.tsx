@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../store/hooks";
 import { useAuth } from "../../hooks/useAuth";
 import { AlertStatus } from "../../types";
 import { useAlerts } from "./hooks/useAlerts";
@@ -7,20 +6,12 @@ import { useAlertsSocket } from "../../hooks/useAlertsSocket";
 import AlertsListContent from "./components/AlertsListContent";
 import AlertDetailModal from "./components/AlertDetailModal";
 import CreateAlertForm from "./components/CreateAlertForm";
-import {
-  Plus,
-  AlertCircle,
-  CheckCircle2,
-  Activity,
-  Search,
-  X,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Activity } from "lucide-react";
 import Pagination from "../../components/ui/Pagination";
 import AlertStatsGrid from "./components/AlertStatsGrid";
-import parkleOrangeSvg from "../../assets/images/parkle-orange.svg";
+import AlertsPageHeader from "./components/AlertsPageHeader";
 
 export default function AlertsPage() {
-  const dispatch = useAppDispatch();
   const { org, isAdmin } = useAuth();
   useAlertsSocket();
   const {
@@ -86,50 +77,13 @@ export default function AlertsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-3 py-6">
-      <div className="flex items-center justify-between gap-4 mb-2">
-        <h1 className="text-lg font-semibold text-ink-700 shrink-0">
-          Alerts
-          {isAdmin ? " – All organizations" : org?.name ? ` – ${org.name}` : ""}
-        </h1>
-        <div className="relative flex-1 max-w-md mx-4 min-w-0">
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {(searchQuery ?? "").trim() && (
-              <button
-                type="button"
-                onClick={() => handleSearchQuery("")}
-                className="p-0.5 rounded text-ink-400 hover:text-ink-600 hover:bg-ink-100 transition-colors"
-                aria-label="Clear search"
-              >
-                <X size={14} />
-              </button>
-            )}
-            <Search size={14} className="text-ink-400 shrink-0" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search alerts by title or description..."
-            value={searchQuery ?? ""}
-            onChange={(e) => handleSearchQuery(e.target.value)}
-            className="w-full pr-12 py-1.5 text-sm bg-transparent border-0 border-b border-ink-300 rounded-none placeholder:text-ink-400 text-ink-700 focus:outline-none focus:border-signal-orange focus:border-b"
-          />
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="new-alert-btn-wrapper group relative inline-flex overflow-visible">
-            <button
-              className="btn-primary px-3 py-1.5 text-base font-bold bg-transparent hover:bg-transparent text-signal-orange relative z-10"
-              onClick={() => setShowCreateForm(true)}
-            >
-              <Plus size={12} />
-              <span className="hidden sm:inline">New Alert</span>
-            </button>
-            <img
-              src={parkleOrangeSvg}
-              alt=""
-              className="new-alert-parkle absolute inset-0 w-full h-full object-contain opacity-0 pointer-events-none transition-opacity duration-200 z-10 object-center origin-center scale-x-125 translate-x-2"
-            />
-          </div>
-        </div>
-      </div>
+      <AlertsPageHeader
+        isAdmin={isAdmin}
+        orgName={org?.name}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchQuery}
+        onCreateAlert={() => setShowCreateForm(true)}
+      />
 
       <AlertStatsGrid
         stats={stats}

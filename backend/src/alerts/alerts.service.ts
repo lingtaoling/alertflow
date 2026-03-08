@@ -89,7 +89,9 @@ export class AlertsService {
       ];
     }
 
-    const baseWhere = { ...where };
+    // Counts exclude status filter so stats always show totals (by org + search)
+    const countsWhere = { ...where };
+    delete countsWhere.status;
     const [data, total, countByStatus] = await Promise.all([
       this.prisma.alert.findMany({
         where,
@@ -105,7 +107,7 @@ export class AlertsService {
       this.prisma.alert.count({ where }),
       this.prisma.alert.groupBy({
         by: ['status'],
-        where: baseWhere,
+        where: countsWhere,
         _count: { status: true },
       }),
     ]);
