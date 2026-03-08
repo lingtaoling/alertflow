@@ -1,8 +1,16 @@
-import { AlertTriangle, LogIn, Loader2 } from 'lucide-react';
-import { useLoginForm } from '../hooks/useLoginForm';
+import { AlertTriangle, LogIn, Loader2 } from "lucide-react";
+import { useLoginForm } from "../hooks/useLoginForm";
 
 export default function LoginForm() {
-  const { email, setEmail, password, setPassword, loading, error, handleSubmit } = useLoginForm();
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    handleSubmit,
+  } = useLoginForm();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -36,7 +44,7 @@ export default function LoginForm() {
       )}
       <button
         type="submit"
-        className="btn-primary w-full justify-center"
+        className="btn-primary w-full justify-center btn-signin"
         disabled={loading || !email.trim() || !password}
       >
         {loading ? (

@@ -2,6 +2,17 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Organization, User } from '../../types';
 
 const TOKEN_KEY = 'accessToken';
+const ORG_KEY = 'auth_org';
+const USER_KEY = 'auth_user';
+
+function parseStored<T>(key: string): T | null {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? (JSON.parse(s) as T) : null;
+  } catch {
+    return null;
+  }
+}
 
 interface AuthState {
   accessToken: string | null;
@@ -15,14 +26,16 @@ const stored = {
   accessToken: localStorage.getItem(TOKEN_KEY),
   orgId: localStorage.getItem('orgId'),
   userId: localStorage.getItem('userId'),
+  org: parseStored<Organization>(ORG_KEY),
+  user: parseStored<User>(USER_KEY),
 };
 
 const initialState: AuthState = {
   accessToken: stored.accessToken,
   orgId: stored.orgId,
   userId: stored.userId,
-  org: null,
-  user: null,
+  org: stored.org,
+  user: stored.user,
 };
 
 const authSlice = createSlice({
@@ -36,9 +49,15 @@ const authSlice = createSlice({
       state.org = action.payload.org;
       state.user = action.payload.user;
       localStorage.setItem(TOKEN_KEY, action.payload.accessToken);
-      if (action.payload.org) localStorage.setItem('orgId', action.payload.org.id);
-      else localStorage.removeItem('orgId');
+      if (action.payload.org) {
+        localStorage.setItem('orgId', action.payload.org.id);
+        localStorage.setItem(ORG_KEY, JSON.stringify(action.payload.org));
+      } else {
+        localStorage.removeItem('orgId');
+        localStorage.removeItem(ORG_KEY);
+      }
       localStorage.setItem('userId', action.payload.user.id);
+      localStorage.setItem(USER_KEY, JSON.stringify(action.payload.user));
     },
     clearSession(state) {
       state.accessToken = null;
@@ -49,6 +68,8 @@ const authSlice = createSlice({
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem('orgId');
       localStorage.removeItem('userId');
+      localStorage.removeItem(ORG_KEY);
+      localStorage.removeItem(USER_KEY);
     },
     setOrgDetails(state, action: PayloadAction<Organization>) {
       state.org = action.payload;

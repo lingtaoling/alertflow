@@ -1,19 +1,23 @@
-import { useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
+import { useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAlerts, fetchAlertById, fetchAlertEvents } from '../store/slices/alertsSlice';
 import { store } from '../store';
 
 /**
- * Connects to the alerts WebSocket and refreshes data on alert:created / alert:updated.
- * Call this from a component that is mounted when the user is authenticated (e.g. AlertsPage).
+ * Connects to the alerts WebSocket only when the user is on the alerts page.
+ * Refreshes data on alert:created / alert:updated. Disconnects when navigating away.
  */
 export function useAlertsSocket() {
   const dispatch = useAppDispatch();
+  const { pathname } = useLocation();
   const accessToken = useAppSelector((s) => s.auth.accessToken);
 
+  const isOnAlertsPage = pathname === '/alerts' || pathname.startsWith('/alerts');
+
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !isOnAlertsPage) return;
 
     const socket = io({
       path: '/socket.io',
@@ -37,5 +41,5 @@ export function useAlertsSocket() {
     return () => {
       socket.disconnect();
     };
-  }, [accessToken, dispatch]);
+  }, [accessToken, isOnAlertsPage, dispatch]);
 }

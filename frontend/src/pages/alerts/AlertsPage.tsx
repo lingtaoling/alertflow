@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
+import { useAuth } from "../../hooks/useAuth";
 import { clearSelected } from "../../store/slices/alertsSlice";
 import { AlertStatus } from "../../types";
 import { useAlerts } from "./hooks/useAlerts";
@@ -18,6 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import Pagination from "../../components/ui/Pagination";
+import StatsCard from "../../components/ui/StatsCard";
+import parkleOrangeSvg from "../../assets/images/parkle-orange.svg";
 
 const STATUS_FILTERS: { label: string; value: AlertStatus | "" }[] = [
   { label: "All", value: "" },
@@ -28,6 +31,7 @@ const STATUS_FILTERS: { label: string; value: AlertStatus | "" }[] = [
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch();
+  const { org, isAdmin } = useAuth();
   useAlertsSocket();
   const {
     items,
@@ -50,79 +54,94 @@ export default function AlertsPage() {
     label: string;
     value: number;
     icon: typeof Activity;
-    color: string;
+    iconBg: string;
+    iconColor: string;
     filterValue: AlertStatus | "";
   }[] = [
     {
       label: "Total",
       value: counts?.total ?? total,
       icon: Activity,
-      color: "text-ink-600",
+      iconBg: "bg-ink-100 border border-ink-200",
+      iconColor: "text-ink-600",
       filterValue: "",
     },
     {
       label: "New",
       value: counts?.NEW ?? 0,
       icon: AlertCircle,
-      color: "text-signal-red",
+      iconBg: "bg-signal-red/15 border border-signal-red/30",
+      iconColor: "text-red-700",
       filterValue: "NEW",
     },
     {
       label: "Acknowledged",
       value: counts?.ACKNOWLEDGED ?? 0,
       icon: Activity,
-      color: "text-signal-orange",
+      iconBg: "bg-signal-orange/15 border border-signal-orange/30",
+      iconColor: "text-orange-700",
       filterValue: "ACKNOWLEDGED",
     },
     {
       label: "Resolved",
       value: counts?.RESOLVED ?? 0,
       icon: CheckCircle2,
-      color: "text-signal-green",
+      iconBg: "bg-signal-green/15 border border-signal-green/30",
+      iconColor: "text-green-700",
       filterValue: "RESOLVED",
     },
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h1 className="text-lg font-semibold text-ink-700">Alerts</h1>
+    <div className="max-w-6xl mx-auto px-3 py-6">
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <h1 className="text-lg font-semibold text-ink-700">
+          Alerts
+          {isAdmin ? " – All organizations" : org?.name ? ` – ${org.name}` : ""}
+        </h1>
         <div className="flex items-center gap-2">
-          <button
-            className="btn-primary"
-            onClick={() => setShowCreateForm(true)}
-          >
-            <Plus size={14} />
-            <span className="hidden sm:inline">New Alert</span>
-          </button>
+          <div className="new-alert-btn-wrapper group relative inline-flex overflow-visible">
+            <button
+              className="btn-primary px-3 py-1.5 text-base font-bold bg-transparent hover:bg-transparent text-signal-orange relative z-10"
+              onClick={() => setShowCreateForm(true)}
+            >
+              <Plus size={12} />
+              <span className="hidden sm:inline">New Alert</span>
+            </button>
+            <img
+              src={parkleOrangeSvg}
+              alt=""
+              className="new-alert-parkle absolute inset-0 w-full h-full object-contain opacity-0 pointer-events-none transition-opacity duration-200 z-10 object-center origin-center scale-x-125 translate-x-2"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {stats.map((s) => {
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6 overflow-visible">
+        {stats.map((s, i) => {
           const isActive = filterStatus === s.filterValue;
-          const cfg = s.filterValue ? statusConfig[s.filterValue] : null;
+          const activeClass =
+            isActive && s.filterValue === ""
+              ? "stats-card-active-total"
+              : isActive && s.filterValue === "NEW"
+                ? "stats-card-active-new"
+                : isActive && s.filterValue === "ACKNOWLEDGED"
+                  ? "stats-card-active-ack"
+                  : isActive && s.filterValue === "RESOLVED"
+                    ? "stats-card-active-resolved"
+                    : "";
           return (
-            <button
+            <StatsCard
               key={s.label}
-              type="button"
+              label={s.label}
+              value={s.value}
+              icon={s.icon}
+              iconBg={s.iconBg}
+              iconColor={s.iconColor}
+              activeClass={activeClass}
               onClick={() => handleStatusFilter(s.filterValue)}
-              className={`card p-3 text-left w-full transition-all card-hover cursor-pointer ${
-                isActive
-                  ? cfg
-                    ? "border-2 " + cfg.badge
-                    : "border-2 border-ink-600 bg-ink-700/5"
-                  : ""
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <s.icon size={13} className={s.color} />
-                <span className="text-ink-500 text-xs">{s.label}</span>
-              </div>
-              <div className="text-2xl font-display font-bold text-ink-700">
-                {s.value}
-              </div>
-            </button>
+              animationDelay={i * 50}
+            />
           );
         })}
       </div>
