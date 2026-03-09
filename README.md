@@ -76,11 +76,16 @@ Every status change:
 
 ### Option A: Docker Compose (recommended)
 
-```bash
-# Create backend/.env from example (required for JWT_SECRET)
-cp backend/.env.example backend/.env
+Docker uses `backend/.env` directly. Ensure it has `PG_PASSWORD`, `JWT_SECRET`, and other required vars (see `backend/.env.example` for reference).
 
-docker compose up -d
+```bash
+# Run (loads backend/.env for compose variables and backend container)
+docker compose --env-file backend/.env up -d
+```
+
+On Windows, if `--env-file` does not load (e.g. path with spaces), use the wrapper:
+```powershell
+.\docker-env.ps1 up -d
 ```
 
 App runs at:
