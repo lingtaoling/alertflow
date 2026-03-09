@@ -62,7 +62,6 @@ model Alert {
   createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
   alertEvents AlertEvent[]
 
-  @@index([orgId, status], map: "idx_alerts_org_status")
   @@index([orgId, status, updatedAt(sort: Desc)], map: "idx_alerts_org_status_updated")
   @@map("alerts")
 }
@@ -79,6 +78,6 @@ model AlertEvent {
   alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
   user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@index([alertId, createdAt], map: "idx_alert_events_alert_created")
+  @@index([alertId], map: "idx_alert_events_alert_id")
   @@map("alert_events")
 }
