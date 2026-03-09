@@ -4,7 +4,6 @@ CREATE TYPE "UserRole" AS ENUM (
   'normal'
 );
 
--- CreateEnum
 CREATE TYPE "AlertStatus" AS ENUM (
   'NEW',
   'ACKNOWLEDGED',
@@ -17,11 +16,9 @@ CREATE TABLE "organizations" (
   "name"       VARCHAR(100) NOT NULL,
   "created_at" TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   CONSTRAINT "organizations_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "users" (
   "id"         UUID         NOT NULL DEFAULT gen_random_uuid(),
   "org_id"     UUID,
@@ -31,25 +28,22 @@ CREATE TABLE "users" (
   "role"       "UserRole"   NOT NULL DEFAULT 'normal',
   "created_at" TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "alerts" (
   "id"              UUID           NOT NULL DEFAULT gen_random_uuid(),
   "title"           TEXT           NOT NULL,
   "description"     TEXT,
   "status"          "AlertStatus"  NOT NULL DEFAULT 'NEW',
+  "version"         INTEGER        NOT NULL DEFAULT 1,
   "org_id"          UUID           NOT NULL,
   "created_by_id"   UUID,
   "created_at"      TIMESTAMPTZ    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"      TIMESTAMPTZ    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   CONSTRAINT "alerts_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "alert_events" (
   "id"          UUID           NOT NULL DEFAULT gen_random_uuid(),
   "alert_id"    UUID           NOT NULL,
@@ -58,21 +52,13 @@ CREATE TABLE "alert_events" (
   "to_status"   "AlertStatus"  NOT NULL,
   "note"        TEXT,
   "created_at"  TIMESTAMPTZ    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   CONSTRAINT "alert_events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
-
--- CreateIndex
-CREATE INDEX "idx_alerts_org_status" ON "alerts"("org_id", "status");
-
--- CreateIndex
-CREATE INDEX "idx_alerts_org_status_created" ON "alerts"("org_id", "status", "created_at" DESC);
-
--- CreateIndex
-CREATE INDEX "idx_alert_events_alert_created" ON "alert_events"("alert_id", "created_at");
+CREATE INDEX "idx_alerts_org_status_updated" ON "alerts"("org_id", "status", "updated_at" DESC);
+CREATE INDEX "idx_alert_events_alert_id" ON "alert_events"("alert_id");
 
 -- AddForeignKey
 ALTER TABLE "users"
@@ -80,26 +66,22 @@ ALTER TABLE "users"
   FOREIGN KEY ("org_id") REFERENCES "organizations"("id")
   ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "alerts"
-  ADD CONSTRAINT "fk_alert_org"
+  ADD CONSTRAINT "alerts_org_id_fkey"
   FOREIGN KEY ("org_id") REFERENCES "organizations"("id")
   ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "alerts"
-  ADD CONSTRAINT "fk_alert_user"
+  ADD CONSTRAINT "alerts_created_by_id_fkey"
   FOREIGN KEY ("created_by_id") REFERENCES "users"("id")
   ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "alert_events"
-  ADD CONSTRAINT "fk_event_alert"
+  ADD CONSTRAINT "alert_events_alert_id_fkey"
   FOREIGN KEY ("alert_id") REFERENCES "alerts"("id")
   ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "alert_events"
-  ADD CONSTRAINT "fk_event_user"
+  ADD CONSTRAINT "alert_events_user_id_fkey"
   FOREIGN KEY ("user_id") REFERENCES "users"("id")
   ON DELETE SET NULL ON UPDATE CASCADE;

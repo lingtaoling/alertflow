@@ -80,6 +80,7 @@ Docker uses `backend/.env` directly. Ensure it has `PG_PASSWORD`, `JWT_SECRET`, 
 
 ```bash
 # Run (loads backend/.env for compose variables and backend container)
+# Database: one migration runs automatically on first start
 docker compose --env-file backend/.env up -d
 ```
 
@@ -109,7 +110,7 @@ docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_DB=alerts_d
 cd backend
 cp .env.example .env
 npm install
-npx prisma migrate dev
+npx prisma migrate deploy   # One migration - creates all tables
 npm run start:dev
 ```
 
