@@ -19,8 +19,13 @@ function isTokenExpired(payload: Record<string, unknown>): boolean {
 
 const PUBLIC_PATHS = ['/auth/login'];
 
+/** When serving separately (e.g. npm run serve), set VITE_API_BASE_URL=http://localhost:3000 */
+const apiBase = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')}/api`
+  : '/api';
+
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: apiBase,
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
 });

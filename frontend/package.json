@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "npx serve dist -s -p 5173"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",

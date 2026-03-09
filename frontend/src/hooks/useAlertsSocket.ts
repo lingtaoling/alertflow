@@ -17,9 +17,12 @@ export function useAlertsSocket() {
   const isOnAlertsPage = pathname === '/alerts' || pathname.startsWith('/alerts');
 
   useEffect(() => {
-    if (!accessToken || !isOnAlertsPage) return;
+    // Only connect when explicitly on alerts page (not login, users, orgs, etc.)
+    if (!accessToken || !isOnAlertsPage || pathname === '/login') return;
 
-    const socket = io({
+    /** When serving separately, set VITE_API_BASE_URL (e.g. http://localhost:3000) */
+    const backendUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || undefined;
+    const socket = io(backendUrl ?? '', {
       path: '/socket.io',
       auth: { token: accessToken },
     });

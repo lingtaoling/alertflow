@@ -25,6 +25,8 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3000);
   const corsOrigins = configService.get<string>('CORS_ORIGINS', 'http://localhost:5173');
 
+  app.setGlobalPrefix('api', { exclude: ['health'] });
+
   // Global pipes
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,7 +44,7 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigins.split(',').map((o) => o.trim()),
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'X-Org-Id', 'X-User-Id', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'X-Org-Id', 'X-User-Id', 'Authorization', 'role'],
     credentials: true,
   });
 
@@ -54,7 +56,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(port);
   const logger = app.get(Logger);

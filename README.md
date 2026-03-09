@@ -85,6 +85,7 @@ docker compose --env-file backend/.env up -d
 ```
 
 On Windows, if `--env-file` does not load (e.g. path with spaces), use the wrapper:
+
 ```powershell
 .\docker-env.ps1 up -d
 ```
@@ -311,3 +312,9 @@ cd backend
 npm test # run once
 npm run test:watch # watch mode
 npm run test:cov # with coverage
+
+Run build
+cd backend
+npm run build npm start
+cd frontend
+npm run build npm run serve
