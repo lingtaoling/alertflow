@@ -26,6 +26,7 @@ export class AlertsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server!: Server;
 
   private readonly logger = new Logger(AlertsGateway.name);
+  private readonly connectionAttempts = new Map<string, number[]>();
 
   constructor(
     private readonly jwtService: JwtService,
@@ -33,8 +34,38 @@ export class AlertsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly prisma: PrismaService,
   ) {}
 
+  private getClientIp(client: any): string {
+    const forwarded = client.handshake?.headers?.['x-forwarded-for'];
+    if (forwarded) {
+      return String(forwarded).split(',')[0].trim();
+    }
+    return client.handshake?.address ?? client.conn?.remoteAddress ?? 'unknown';
+  }
+
+  private isRateLimited(ip: string): boolean {
+    const ttl = parseInt(this.configService.get<string>('WS_RATE_LIMIT_TTL') ?? '60000', 10);
+    const max = parseInt(this.configService.get<string>('WS_RATE_LIMIT_MAX') ?? '10', 10);
+    const now = Date.now();
+    const cutoff = now - ttl;
+    let timestamps = this.connectionAttempts.get(ip) ?? [];
+    timestamps = timestamps.filter((t) => t > cutoff);
+    if (timestamps.length >= max) {
+      return true;
+    }
+    timestamps.push(now);
+    this.connectionAttempts.set(ip, timestamps);
+    return false;
+  }
+
   async handleConnection(client: any) {
     try {
+      const ip = this.getClientIp(client);
+      if (this.isRateLimited(ip)) {
+        this.logger.warn(`WebSocket connection rejected: rate limit exceeded for ${ip}`);
+        client.disconnect();
+        return;
+      }
+
       const token = client.handshake?.auth?.token ?? client.handshake?.query?.token;
       if (!token) {
         this.logger.warn('WebSocket connection rejected: no token');

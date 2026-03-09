@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -37,6 +38,16 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       isGlobal: true,
       envFilePath: ['.env', '.env.local'],
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: parseInt(config.get<string>('THROTTLE_TTL') ?? '60000', 10),
+          limit: parseInt(config.get<string>('THROTTLE_LIMIT') ?? '100', 10),
+        },
+      ],
+    }),
     PrismaModule,
     HealthModule,
     AuthModule,
@@ -45,6 +56,10 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     AlertsModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,

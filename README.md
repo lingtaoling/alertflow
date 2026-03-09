@@ -77,14 +77,17 @@ Every status change:
 ### Option A: Docker Compose (recommended)
 
 ```bash
+# Create backend/.env from example (required for JWT_SECRET)
+cp backend/.env.example backend/.env
+
 docker compose up -d
 ```
 
 App runs at:
 
-- Frontend: http://localhost:80
-- Backend: http://localhost:3000
-- API Docs: http://localhost:3000/api/docs
+- Frontend: http://localhost
+- Backend API: http://localhost:3000 (direct) or http://localhost/api (via nginx)
+- API Docs: http://localhost/api/docs
 
 ### Option B: Local Development
 
