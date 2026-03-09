@@ -62,6 +62,7 @@ This means: even if a user sends a different `X-Org-Id`, they cannot access data
 ```
 
 Every status change:
+
 - Validates the transition is allowed
 - Updates `alerts.status` atomically
 - Creates an `AlertEvent` row with `from_status`, `to_status`, `user_id`, optional `note`
@@ -69,15 +70,18 @@ Every status change:
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - PostgreSQL 14+ (or Docker)
 
 ### Option A: Docker Compose (recommended)
+
 ```bash
 docker compose up -d
 ```
 
 App runs at:
+
 - Frontend: http://localhost:80
 - Backend: http://localhost:3000
 - API Docs: http://localhost:3000/api/docs
@@ -85,12 +89,14 @@ App runs at:
 ### Option B: Local Development
 
 **1. Database**
+
 ```bash
 # Start PostgreSQL
 docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_DB=alerts_db postgres:16-alpine
 ```
 
 **2. Backend**
+
 ```bash
 cd backend
 cp .env.example .env
@@ -100,6 +106,7 @@ npm run start:dev
 ```
 
 **3. Frontend**
+
 ```bash
 cd frontend
 npm install
@@ -109,6 +116,7 @@ npm run dev
 ## API Reference
 
 ### Tenant Headers (required for all protected endpoints)
+
 ```
 X-Org-Id: <organization-uuid>
 X-User-Id: <user-uuid>
@@ -116,18 +124,18 @@ X-User-Id: <user-uuid>
 
 ### Endpoints
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | /health | — | Health check |
-| POST | /orgs | — | Create organization |
-| GET | /orgs | — | List organizations |
-| POST | /users | — | Create user in an org |
-| GET | /users | ✓ | List users in current org |
-| POST | /alerts | ✓ | Create alert |
-| GET | /alerts | ✓ | List alerts (filter + paginate) |
-| GET | /alerts/:id | ✓ | Get single alert |
-| PATCH | /alerts/:id/status | ✓ | Advance workflow status |
-| GET | /alerts/:id/events | ✓ | Get audit trail |
+| Method | Path               | Auth | Description                     |
+| ------ | ------------------ | ---- | ------------------------------- |
+| GET    | /health            | —    | Health check                    |
+| POST   | /orgs              | —    | Create organization             |
+| GET    | /orgs              | —    | List organizations              |
+| POST   | /users             | —    | Create user in an org           |
+| GET    | /users             | ✓    | List users in current org       |
+| POST   | /alerts            | ✓    | Create alert                    |
+| GET    | /alerts            | ✓    | List alerts (filter + paginate) |
+| GET    | /alerts/:id        | ✓    | Get single alert                |
+| PATCH  | /alerts/:id/status | ✓    | Advance workflow status         |
+| GET    | /alerts/:id/events | ✓    | Get audit trail                 |
 
 ### Example: Full Workflow
 
@@ -265,10 +273,32 @@ alert_events  (id, alert_id, user_id, from_status, to_status, note, created_at)
 
 ## Config (env vars)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3000` | API server port |
-| `DATABASE_URL` | — | PostgreSQL connection string |
-| `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins |
-| `NODE_ENV` | `development` | Environment |
-| `LOG_LEVEL` | `debug` | Log verbosity |
+| Variable       | Default                 | Description                  |
+| -------------- | ----------------------- | ---------------------------- |
+| `PORT`         | `3000`                  | API server port              |
+| `DATABASE_URL` | —                       | PostgreSQL connection string |
+| `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins     |
+| `NODE_ENV`     | `development`           | Environment                  |
+| `LOG_LEVEL`    | `debug`                 | Log verbosity                |
+
+src/alerts/alerts.service.spec.ts
+
+create: Creates alert and initial event, emits gateway event
+findAll: Pagination, org filter, status filter, search, admin (no org)
+findOne: Returns alert, throws NotFoundException when missing
+updateStatus: NEW → ACKNOWLEDGED, invalid transition, version conflict, not found
+getEvents: Returns events, throws when alert not found
+
+src/alerts/alerts.controller.spec.ts
+
+create: Normal user with org, admin with dto.orgId, validation errors
+findAll: Org-scoped list, admin, validation
+findOne: Returns alert by id
+updateStatus: Delegates to service
+getEvents: Delegates to service
+
+Run tests
+cd backend
+npm test # run once
+npm run test:watch # watch mode
+npm run test:cov # with coverage
