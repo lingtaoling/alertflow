@@ -209,13 +209,13 @@ export default function AlertDetailModal({ alert }: Props) {
                         </div>
                       </div>
                       {/* Row 2: description */}
-                      {alert.description ? (
+                      {event.note?.trim() ? (
                         <p className="text-ink-600 text-sm mt-2 bg-ink-100 rounded-lg px-3 py-2  break-words">
-                          {alert.description}
+                          {event.note}
                         </p>
-                      ) : event.note ? (
+                      ) : !event.fromStatus ? (
                         <p className="text-ink-600 text-sm mt-2 bg-ink-100 rounded-lg px-3 py-2  break-words">
-                          "{event.note}"
+                          Alert created
                         </p>
                       ) : null}
                     </div>

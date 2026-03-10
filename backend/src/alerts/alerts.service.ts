@@ -53,7 +53,7 @@ export class AlertsService {
           userId,
           fromStatus: null,
           toStatus: AlertStatus.NEW,
-          note: 'Alert created',
+          note: dto.description?.trim() ? dto.description.trim() : null,
         },
       });
 
