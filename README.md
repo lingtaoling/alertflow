@@ -1,6 +1,7 @@
 # AlertFlow — Alerts & Workflow System
 
 A production-ready, multi-tenant alert management system with full workflow support.
+Demo: https://oaimu.com/ (Temporary domain, will be updated later)
 
 <p align="center">
   <img src="docs/AlertFlow1.png" width="32%" />
@@ -12,8 +13,6 @@ A production-ready, multi-tenant alert management system with full workflow supp
 
 <p align="center">
   <img src="docs/ER.png" width="50%" />
-</p>
-<p align="center">
   <img src="docs/UC.png" width="50%" />
 </p>
 
