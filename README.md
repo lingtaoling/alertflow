@@ -78,6 +78,46 @@ App runs at:
 - Swagger: http://localhost/api/docs
 - Health: http://localhost:3000/health
 
+## New System Setup (Migrations + Admin)
+
+For a fresh install:
+
+**1. Run migrations**
+
+```bash
+cd backend
+npx prisma migrate deploy
+```
+
+**2. Create first admin user**
+
+```bash
+# Local
+psql -h localhost -U postgres -d alert_workflow_db -f scripts/create-admin.sql
+
+# Docker
+docker exec -i alerts_db psql -U postgres -d alert_workflow_db < backend/scripts/create-admin.sql
+```
+
+Or run this SQL manually:
+
+```sql
+INSERT INTO users (id, org_id, email, password, name, role, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  NULL,
+  'admin@alertflow.com',
+  'Demouser123',
+  'Admin',
+  'admin',
+  NOW(),
+  NOW()
+)
+ON CONFLICT (email) DO NOTHING;
+```
+
+**Admin login:** `admin@alertflow.com` / `Demouser123`
+
 ### Option B: Local Development
 
 **1. Database**
@@ -120,113 +160,218 @@ When serving the built frontend with `npm run serve` and backend separately:
 4. Start backend: `cd backend && npm run start`
 5. Start frontend: `cd frontend && npm run serve`
 
-## New System Setup (Migrations + Admin)
-
-For a fresh install:
-
-**1. Run migrations**
-
-```bash
-cd backend
-npx prisma migrate deploy
-```
-
-**2. Create first admin user**
-
-```bash
-# Local
-psql -h localhost -U postgres -d alert_workflow_db -f scripts/create-admin.sql
-
-# Docker
-docker exec -i alerts_db psql -U postgres -d alert_workflow_db < backend/scripts/create-admin.sql
-```
-
-Or run this SQL manually:
-
-```sql
-INSERT INTO users (id, org_id, email, password, name, role, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  NULL,
-  'admin@alertflow.com',
-  'Demouser123',
-  'Admin',
-  'admin',
-  NOW(),
-  NOW()
-)
-ON CONFLICT (email) DO NOTHING;
-```
-
-**Admin login:** `admin@alertflow.com` / `Demouser123`
-
 ## API Reference
 
 All API routes use the `/api` prefix (except `/health`).
 
-### Auth
+### Base URLs
 
-| Method | Path           | Description        |
-| ------ | -------------- | ------------------ |
-| POST   | /api/auth/login | Login (email, password) |
+- Direct backend: `http://localhost:3000`
+- Via Docker/nginx: `http://localhost/api`
+- Swagger UI: `http://localhost/api/docs`
 
-### Tenant Headers (protected endpoints)
+### Authentication
 
+Protected endpoints require a bearer token:
+
+```http
+Authorization: Bearer <accessToken>
 ```
-Authorization: Bearer <jwt>
-X-Org-Id: <organization-uuid>
-X-User-Id: <user-uuid>
+
+The token payload includes:
+
+- `sub` (user id)
+- `orgId` (organization id, can be `null` for admin users)
+- `email`
+- `role` (`admin` or `normal`)
+
+### Authorization model
+
+- `POST /api/orgs` and `POST /api/users`: admin only
+- `GET /api/users`: admin gets all users; normal users get users in their own org
+- Alerts endpoints are auth-protected and org-scoped for normal users
+- Admin can query alerts across orgs; when creating an alert, admin must provide `orgId`
+
+### Endpoint Summary
+
+| Method | Path                   | Auth | Description                                          |
+| ------ | ---------------------- | ---- | ---------------------------------------------------- |
+| GET    | /health                | —    | Health check (includes DB probe)                     |
+| POST   | /api/auth/login        | —    | Login and receive access token                       |
+| GET    | /api/orgs              | —    | List organizations                                   |
+| POST   | /api/orgs              | ✓    | Create organization (admin only)                     |
+| POST   | /api/users             | ✓    | Create user in an organization (admin only)          |
+| GET    | /api/users             | ✓    | List users (admin: all, normal: current org)         |
+| POST   | /api/alerts            | ✓    | Create alert (admin may pass `orgId`)                |
+| GET    | /api/alerts            | ✓    | List alerts with pagination/filter/search            |
+| GET    | /api/alerts/:id        | ✓    | Get single alert                                     |
+| PATCH  | /api/alerts/:id/status | ✓    | Advance workflow status with optimistic concurrency  |
+| GET    | /api/alerts/:id/events | ✓    | Get alert audit trail (status transitions + notes)   |
+
+### Request/Response Details
+
+#### 1) Login
+
+**POST** `/api/auth/login`
+
+Request:
+
+```json
+{
+  "email": "admin@alertflow.com",
+  "password": "Demouser123"
+}
 ```
 
-### Endpoints
+Response (example):
 
-| Method | Path                 | Auth | Description                     |
-| ------ | -------------------- | ---- | ------------------------------- |
-| GET    | /health              | —    | Health check                    |
-| POST   | /api/orgs            | —    | Create organization             |
-| GET    | /api/orgs            | —    | List organizations              |
-| POST   | /api/users           | —    | Create user in an org           |
-| GET    | /api/users           | ✓    | List users in current org       |
-| POST   | /api/alerts          | ✓    | Create alert                    |
-| GET    | /api/alerts          | ✓    | List alerts (filter + paginate) |
-| GET    | /api/alerts/:id      | ✓    | Get single alert                |
-| PATCH  | /api/alerts/:id/status | ✓  | Advance workflow status         |
-| GET    | /api/alerts/:id/events | ✓  | Get audit trail                 |
-
-### Example: Full Workflow
-
-```bash
-# 1. Login
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@alertflow.com", "password": "Demouser123"}'
-
-# 2. Create org
-curl -X POST http://localhost:3000/api/orgs \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Acme Corp"}'
-
-# 3. Create user
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Alice", "email": "alice@acme.com", "orgId": "org-uuid"}'
-
-# 4. Create alert (with JWT + tenant headers)
-curl -X POST http://localhost:3000/api/alerts \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -H "X-Org-Id: org-uuid" \
-  -H "X-User-Id: user-uuid" \
-  -d '{"title": "DB CPU spike", "description": "Optional context"}'
-
-# 5. Acknowledge
-curl -X PATCH http://localhost:3000/api/alerts/alert-uuid/status \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -H "X-Org-Id: org-uuid" \
-  -H "X-User-Id: user-uuid" \
-  -d '{"status": "ACKNOWLEDGED", "note": "Investigating"}'
+```json
+{
+  "accessToken": "<jwt>",
+  "user": {
+    "id": "user-uuid",
+    "email": "admin@alertflow.com",
+    "name": "Admin",
+    "role": "admin",
+    "organization": null
+  },
+  "org": null
+}
 ```
+
+#### 2) Create organization (admin)
+
+**POST** `/api/orgs`
+
+Request:
+
+```json
+{
+  "name": "Acme Corp"
+}
+```
+
+#### 3) Create user (admin)
+
+**POST** `/api/users`
+
+Request:
+
+```json
+{
+  "email": "alice@acme.com",
+  "name": "Alice",
+  "password": "securePassword123",
+  "orgId": "org-uuid"
+}
+```
+
+#### 4) Create alert
+
+**POST** `/api/alerts`
+
+Request (normal user):
+
+```json
+{
+  "title": "Database CPU spike",
+  "description": "CPU usage exceeded 90% threshold"
+}
+```
+
+Request (admin creating for a specific org):
+
+```json
+{
+  "title": "Database CPU spike",
+  "description": "CPU usage exceeded 90% threshold",
+  "orgId": "org-uuid"
+}
+```
+
+Notes:
+
+- New alerts start at status `NEW`
+- Server also creates an initial `alert_event` entry
+
+#### 5) List alerts (pagination/filter/search)
+
+**GET** `/api/alerts?limit=10&offset=0&status=NEW&search=cpu`
+
+Query params:
+
+- `limit` (1-100, default `20`)
+- `offset` (>= 0, default `0`)
+- `status` (`NEW` | `ACKNOWLEDGED` | `RESOLVED`)
+- `search` (matches title/description, case-insensitive)
+
+Response shape:
+
+```json
+{
+  "data": [],
+  "total": 0,
+  "limit": 10,
+  "offset": 0,
+  "hasMore": false,
+  "counts": {
+    "total": 0,
+    "NEW": 0,
+    "ACKNOWLEDGED": 0,
+    "RESOLVED": 0
+  }
+}
+```
+
+#### 6) Update alert status (workflow + concurrency safe)
+
+**PATCH** `/api/alerts/:id/status`
+
+Request:
+
+```json
+{
+  "status": "ACKNOWLEDGED",
+  "version": 1,
+  "note": "Investigating"
+}
+```
+
+Rules:
+
+- Allowed transitions only: `NEW -> ACKNOWLEDGED -> RESOLVED`
+- `version` is required for optimistic locking
+- If another user already updated the alert, API returns `409 Conflict`
+
+#### 7) Get alert events
+
+**GET** `/api/alerts/:id/events`
+
+Returns ordered audit history (created event + status transition events with actor and optional note).
+
+### Standard Error Format
+
+Errors are returned in a consistent shape:
+
+```json
+{
+  "statusCode": 409,
+  "error": "Conflict",
+  "message": "Unique constraint violation on field: email",
+  "timestamp": "2026-03-10T12:00:00.000Z",
+  "path": "/api/users",
+  "method": "POST"
+}
+```
+
+Common statuses:
+
+- `400` bad request / invalid transition
+- `401` invalid or expired token
+- `403` role/organization forbidden
+- `404` resource not found
+- `409` uniqueness conflict or stale `version` on status update
+- `429` throttled (rate limit)
 
 ## Project Structure
 
@@ -275,19 +420,19 @@ alert_events  (id, alert_id, user_id, from_status, to_status, note, created_at)
 
 ## Config (env vars)
 
-| Variable         | Default                 | Description                  |
-| ---------------- | ----------------------- | ---------------------------- |
-| `PORT`           | `3000`                  | API server port              |
-| `DATABASE_URL`   | —                       | PostgreSQL connection string |
-| `PG_USER`        | `postgres`              | DB user (Docker)             |
-| `PG_PASSWORD`     | —                       | DB password (required)       |
-| `PG_DATABASE`    | `alert_workflow_db`     | DB name                      |
-| `JWT_SECRET`     | —                       | JWT signing secret           |
-| `CORS_ORIGINS`   | `http://localhost:5173` | Allowed frontend origins     |
-| `THROTTLE_TTL`   | `60000`                 | Rate limit window (ms)       |
-| `THROTTLE_LIMIT` | `100`                   | Requests per window          |
-| `WS_RATE_LIMIT_*`| —                       | WebSocket rate limiting      |
-| `VITE_API_BASE_URL` | —                    | Frontend: backend URL when serving separately |
+| Variable            | Default                 | Description                                   |
+| ------------------- | ----------------------- | --------------------------------------------- |
+| `PORT`              | `3000`                  | API server port                               |
+| `DATABASE_URL`      | —                       | PostgreSQL connection string                  |
+| `PG_USER`           | `postgres`              | DB user (Docker)                              |
+| `PG_PASSWORD`       | —                       | DB password (required)                        |
+| `PG_DATABASE`       | `alert_workflow_db`     | DB name                                       |
+| `JWT_SECRET`        | —                       | JWT signing secret                            |
+| `CORS_ORIGINS`      | `http://localhost:5173` | Allowed frontend origins                      |
+| `THROTTLE_TTL`      | `60000`                 | Rate limit window (ms)                        |
+| `THROTTLE_LIMIT`    | `100`                   | Requests per window                           |
+| `WS_RATE_LIMIT_*`   | —                       | WebSocket rate limiting                       |
+| `VITE_API_BASE_URL` | —                       | Frontend: backend URL when serving separately |
 
 ## Tests
 
@@ -311,5 +456,3 @@ cd frontend
 npm run build
 npm run serve
 ```
-
-On Ubuntu, if `serve` shows a clipboard error (`xsel`), the app still runs. Install `xsel` to fix it: `sudo apt install xsel`. Or use `npm run preview` instead.
