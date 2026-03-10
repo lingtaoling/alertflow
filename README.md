@@ -2,6 +2,12 @@
 
 A production-ready, multi-tenant alert management system with full workflow support.
 
+<p align="center">
+  <img src="docs/AlertFlow1.png" width="32%" />
+  <img src="docs/AlertFlow2.png" width="32%" />
+  <img src="docs/AlertFlow3.png" width="32%" />
+</p>
+
 ## Architecture
 
 ```
@@ -150,6 +156,9 @@ npm run dev
 
 Frontend: http://localhost:5173 (Vite proxies `/api` and `/socket.io` to backend)
 
+- Swagger UI: `http://localhost:3000/api/docs`
+- Health UI: `http://localhost:3000/health`
+
 ### Option C: Built Frontend + Backend (Separate Processes)
 
 When serving the built frontend with `npm run serve` and backend separately:
@@ -194,19 +203,19 @@ The token payload includes:
 
 ### Endpoint Summary
 
-| Method | Path                   | Auth | Description                                          |
-| ------ | ---------------------- | ---- | ---------------------------------------------------- |
-| GET    | /health                | —    | Health check (includes DB probe)                     |
-| POST   | /api/auth/login        | —    | Login and receive access token                       |
-| GET    | /api/orgs              | —    | List organizations                                   |
-| POST   | /api/orgs              | ✓    | Create organization (admin only)                     |
-| POST   | /api/users             | ✓    | Create user in an organization (admin only)          |
-| GET    | /api/users             | ✓    | List users (admin: all, normal: current org)         |
-| POST   | /api/alerts            | ✓    | Create alert (admin may pass `orgId`)                |
-| GET    | /api/alerts            | ✓    | List alerts with pagination/filter/search            |
-| GET    | /api/alerts/:id        | ✓    | Get single alert                                     |
-| PATCH  | /api/alerts/:id/status | ✓    | Advance workflow status with optimistic concurrency  |
-| GET    | /api/alerts/:id/events | ✓    | Get alert audit trail (status transitions + notes)   |
+| Method | Path                   | Auth | Description                                         |
+| ------ | ---------------------- | ---- | --------------------------------------------------- |
+| GET    | /health                | —    | Health check (includes DB probe)                    |
+| POST   | /api/auth/login        | —    | Login and receive access token                      |
+| GET    | /api/orgs              | —    | List organizations                                  |
+| POST   | /api/orgs              | ✓    | Create organization (admin only)                    |
+| POST   | /api/users             | ✓    | Create user in an organization (admin only)         |
+| GET    | /api/users             | ✓    | List users (admin: all, normal: current org)        |
+| POST   | /api/alerts            | ✓    | Create alert (admin may pass `orgId`)               |
+| GET    | /api/alerts            | ✓    | List alerts with pagination/filter/search           |
+| GET    | /api/alerts/:id        | ✓    | Get single alert                                    |
+| PATCH  | /api/alerts/:id/status | ✓    | Advance workflow status with optimistic concurrency |
+| GET    | /api/alerts/:id/events | ✓    | Get alert audit trail (status transitions + notes)  |
 
 ### Request/Response Details
 
