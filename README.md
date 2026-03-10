@@ -1,6 +1,6 @@
 # AlertFlow — Alerts & Workflow System
 
-A production-ready, multi-tenant alert management system with full workflow support.
+A production-ready, multi-tenant alert management system with full workflow support.  
 Demo: https://oaimu.com/ (Temporary domain, will be updated later)
 
 <p align="center">
@@ -12,8 +12,8 @@ Demo: https://oaimu.com/ (Temporary domain, will be updated later)
 ## Architecture
 
 <p align="center">
-  <img src="docs/ER.png" width="50%" />
-  <img src="docs/UC.png" width="50%" />
+  <img src="docs/ER.png" width="45%" />
+  <img src="docs/UC.png" width="45%" />
 </p>
 
 ## Quick Start
@@ -23,22 +23,7 @@ Demo: https://oaimu.com/ (Temporary domain, will be updated later)
 - Node.js 20+
 - PostgreSQL 14+ (or Docker)
 
-### Option A: Docker Compose
-
-Ensure `backend/.env` has `PG_PASSWORD`, `JWT_SECRET`, and other required vars (see `backend/.env.example`).
-
-```bash
-docker compose --env-file backend/.env up -d
-```
-
-App runs at:
-
-- Frontend: http://localhost
-- Backend API: http://localhost:3000 (direct) or http://localhost/api (via nginx)
-- Swagger: http://localhost/api/docs
-- Health: http://localhost:3000/health
-
-### Option B: Local Development
+### Option A: Local Development
 
 **1. Database**
 
@@ -72,6 +57,21 @@ Frontend: http://localhost:5173 (Vite proxies `/api` and `/socket.io` to backend
 
 - Swagger UI: `http://localhost:3000/api/docs`
 - Health UI: `http://localhost:3000/health`
+
+### Option B: Docker Compose
+
+Ensure `backend/.env` has `PG_PASSWORD`, `JWT_SECRET`, and other required vars (see `backend/.env.example`).
+
+```bash
+docker compose --env-file backend/.env up -d
+```
+
+App runs at:
+
+- Frontend: http://localhost
+- Backend API: http://localhost:3000 (direct) or http://localhost/api (via nginx)
+- Swagger: http://localhost/api/docs
+- Health: http://localhost:3000/health
 
 ## New System Setup (Migrations + Admin)
 
@@ -116,6 +116,32 @@ ON CONFLICT (email) DO NOTHING;
 ## API Reference
 
 All API routes use the `/api` prefix (except `/health`).
+
+## UI Features
+
+- Create alert form
+- Alerts list view
+- Filter by status
+- Search by title/description
+- Pagination controls
+- Alert details modal showing:
+  - Current status
+  - Audit events timeline
+- Loading and error states
+- WebSocket / SSE updates for live alerts
+- Rate limiting
+
+## Backend Features
+
+- Every status change creates an `AlertEvent` row.
+- Alerts are org-scoped (tenant isolation).
+- JWT authentication and authorization guards.
+- Schema migrations and indexed database queries.
+- Service-layer abstraction (controller -> service -> Prisma).
+- Centralized error handling.
+- Structured logging.
+- Env-based configuration management.
+- Unit tests.
 
 ### Base URLs
 
