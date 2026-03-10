@@ -29,7 +29,7 @@ export class AlertsService {
 
   /**
    * Create an alert — always scoped to the authenticated user's org.
-   * The orgId comes from the TenantGuard, never from user input.
+   * The orgId comes from the JWT (JwtStrategy), never from user input.
    */
   async create(orgId: string, userId: string, dto: CreateAlertDto) {
     this.logger.log(`Creating alert "${dto.title}" in org ${orgId} by user ${userId}`);

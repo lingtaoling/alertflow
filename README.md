@@ -8,47 +8,42 @@ A production-ready, multi-tenant alert management system with full workflow supp
 ┌─────────────────────────────────────────────────────────────┐
 │                        Frontend (React)                     │
 │  React + TypeScript + Tailwind + Redux Toolkit              │
-│  Port: 5173 (dev) / 80 (prod)                               │
+│  Port: 5173 (dev) / 80 (Docker)                             │
 └────────────────────────┬────────────────────────────────────┘
-                         │ HTTP (X-Org-Id, X-User-Id headers)
+                         │ HTTP (Bearer JWT)
+                         │ WebSocket (Socket.IO for real-time alerts)
 ┌────────────────────────▼────────────────────────────────────┐
-│                     Backend (NestJS)                        │
+│                     Backend (NestJS)                         │
 │  Node.js + NestJS + TypeScript + Prisma ORM                 │
 │  Port: 3000                                                 │
 │                                                             │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
-│  │   Orgs   │  │  Users   │  │  Alerts  │  │  Health   │  │
-│  │ /orgs    │  │ /users   │  │ /alerts  │  │ /health   │  │
-│  └──────────┘  └──────────┘  └────┬─────┘  └───────────┘  │
-│                                   │                         │
-│              ┌────────────────────▼──────────────────────┐  │
-│              │           TenantGuard                      │  │
-│              │  Validates X-Org-Id + X-User-Id headers   │  │
-│              │  Ensures user belongs to claimed org       │  │
-│              │  Attaches orgId/userId to request          │  │
+│  │   Auth   │  │   Orgs   │  │  Users   │  │  Alerts   │  │
+│  │ /auth    │  │ /orgs    │  │ /users   │  │ /alerts   │  │
+│  └──────────┘  └──────────┘  └──────────┘  └─────┬─────┘  │
+│                                                   │         │
+│                │
+│              │           JwtAuthGuard + OrgRequiredGuard│  │
+│              │  Validates JWT, enforces org context     │  │
+│              │  Ensures user belongs to claimed org      │  │
 │              └───────────────────────────────────────────┘  │
 └────────────────────────┬────────────────────────────────────┘
                          │ Prisma ORM
 ┌────────────────────────▼────────────────────────────────────┐
 │                  PostgreSQL Database                        │
 │  organizations → users → alerts → alert_events             │
-│  Indexes: (org_id), (org_id, status), (alert_id)           │
+│  Indexes: (org_id, status, updated_at), (alert_id) ,(email) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Tenant Isolation Strategy
 
-**How data is isolated between organizations:**
-
-1. Every protected endpoint uses `TenantGuard`
-2. The guard reads `X-Org-Id` and `X-User-Id` from request headers
-3. It verifies: `SELECT * FROM users WHERE id = $userId AND org_id = $orgId`
+1. Every protected endpoint uses `JwtAuthGuard` and `OrgRequiredGuard`
+2. The JWT contains `sub` (userId), `orgId`, and `role`; guards enforce org context
+3. It verifies the user belongs to the claimed org
 4. If verification fails → `401 Unauthorized`
-5. The validated `orgId` is attached to the request object
-6. All service methods receive `orgId` from the guard — **never from user-supplied body/query**
-7. Every database query includes `WHERE org_id = $orgId`
-
-This means: even if a user sends a different `X-Org-Id`, they cannot access data unless they have a user record in that org.
+5. All service methods receive `orgId` from the guard — never from user-supplied body/query
+6. Every database query includes `WHERE org_id = $orgId`
 
 ## Workflow State Machine
 
@@ -57,15 +52,9 @@ This means: even if a user sends a different `X-Org-Id`, they cannot access data
   │ NEW │ ──────────────▶  │ ACKNOWLEDGED │ ─────────────▶ │ RESOLVED │
   └─────┘                  └──────────────┘                └──────────┘
      │                                                           │
-     │           AlertEvent created on every transition         │
+     │           AlertEvent created on every transition          │
      └───────────────────────────────────────────────────────────┘
 ```
-
-Every status change:
-
-- Validates the transition is allowed
-- Updates `alerts.status` atomically
-- Creates an `AlertEvent` row with `from_status`, `to_status`, `user_id`, optional `note`
 
 ## Quick Start
 
@@ -74,35 +63,30 @@ Every status change:
 - Node.js 20+
 - PostgreSQL 14+ (or Docker)
 
-### Option A: Docker Compose (recommended)
+### Option A: Docker Compose
 
-Docker uses `backend/.env` directly. Ensure it has `PG_PASSWORD`, `JWT_SECRET`, and other required vars (see `backend/.env.example` for reference).
+Ensure `backend/.env` has `PG_PASSWORD`, `JWT_SECRET`, and other required vars (see `backend/.env.example`).
 
 ```bash
-# Run (loads backend/.env for compose variables and backend container)
-# Database: one migration runs automatically on first start
 docker compose --env-file backend/.env up -d
-```
-
-On Windows, if `--env-file` does not load (e.g. path with spaces), use the wrapper:
-
-```powershell
-.\docker-env.ps1 up -d
 ```
 
 App runs at:
 
 - Frontend: http://localhost
 - Backend API: http://localhost:3000 (direct) or http://localhost/api (via nginx)
-- API Docs: http://localhost/api/docs
+- Swagger: http://localhost/api/docs
+- Health: http://localhost:3000/health
 
 ### Option B: Local Development
 
 **1. Database**
 
 ```bash
-# Start PostgreSQL
-docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_DB=alerts_db postgres:16-alpine
+docker run -d -p 5432:5432 \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=alert_workflow_db \
+  postgres:16-alpine
 ```
 
 **2. Backend**
@@ -110,8 +94,9 @@ docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_DB=alerts_d
 ```bash
 cd backend
 cp .env.example .env
+# Edit .env: DATABASE_URL, JWT_SECRET, etc.
 npm install
-npx prisma migrate deploy   # One migration - creates all tables
+npx prisma migrate deploy
 npm run start:dev
 ```
 
@@ -123,198 +108,208 @@ npm install
 npm run dev
 ```
 
+Frontend: http://localhost:5173 (Vite proxies `/api` and `/socket.io` to backend)
+
+### Option C: Built Frontend + Backend (Separate Processes)
+
+When serving the built frontend with `npm run serve` and backend separately:
+
+1. Create `frontend/.env` with `VITE_API_BASE_URL=http://localhost:3000`
+2. Rebuild: `cd frontend && npm run build`
+3. Ensure `backend/.env` has `CORS_ORIGINS=http://localhost:5173`
+4. Start backend: `cd backend && npm run start`
+5. Start frontend: `cd frontend && npm run serve`
+
+## New System Setup (Migrations + Admin)
+
+For a fresh install:
+
+**1. Run migrations**
+
+```bash
+cd backend
+npx prisma migrate deploy
+```
+
+**2. Create first admin user**
+
+```bash
+# Local
+psql -h localhost -U postgres -d alert_workflow_db -f scripts/create-admin.sql
+
+# Docker
+docker exec -i alerts_db psql -U postgres -d alert_workflow_db < backend/scripts/create-admin.sql
+```
+
+Or run this SQL manually:
+
+```sql
+INSERT INTO users (id, org_id, email, password, name, role, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  NULL,
+  'admin@alertflow.com',
+  'Demouser123',
+  'Admin',
+  'admin',
+  NOW(),
+  NOW()
+)
+ON CONFLICT (email) DO NOTHING;
+```
+
+**Admin login:** `admin@alertflow.com` / `Demouser123`
+
 ## API Reference
 
-### Tenant Headers (required for all protected endpoints)
+All API routes use the `/api` prefix (except `/health`).
+
+### Auth
+
+| Method | Path           | Description        |
+| ------ | -------------- | ------------------ |
+| POST   | /api/auth/login | Login (email, password) |
+
+### Tenant Headers (protected endpoints)
 
 ```
+Authorization: Bearer <jwt>
 X-Org-Id: <organization-uuid>
 X-User-Id: <user-uuid>
 ```
 
 ### Endpoints
 
-| Method | Path               | Auth | Description                     |
-| ------ | ------------------ | ---- | ------------------------------- |
-| GET    | /health            | —    | Health check                    |
-| POST   | /orgs              | —    | Create organization             |
-| GET    | /orgs              | —    | List organizations              |
-| POST   | /users             | —    | Create user in an org           |
-| GET    | /users             | ✓    | List users in current org       |
-| POST   | /alerts            | ✓    | Create alert                    |
-| GET    | /alerts            | ✓    | List alerts (filter + paginate) |
-| GET    | /alerts/:id        | ✓    | Get single alert                |
-| PATCH  | /alerts/:id/status | ✓    | Advance workflow status         |
-| GET    | /alerts/:id/events | ✓    | Get audit trail                 |
+| Method | Path                 | Auth | Description                     |
+| ------ | -------------------- | ---- | ------------------------------- |
+| GET    | /health              | —    | Health check                    |
+| POST   | /api/orgs            | —    | Create organization             |
+| GET    | /api/orgs            | —    | List organizations              |
+| POST   | /api/users           | —    | Create user in an org           |
+| GET    | /api/users           | ✓    | List users in current org       |
+| POST   | /api/alerts          | ✓    | Create alert                    |
+| GET    | /api/alerts          | ✓    | List alerts (filter + paginate) |
+| GET    | /api/alerts/:id      | ✓    | Get single alert                |
+| PATCH  | /api/alerts/:id/status | ✓  | Advance workflow status         |
+| GET    | /api/alerts/:id/events | ✓  | Get audit trail                 |
 
 ### Example: Full Workflow
 
 ```bash
-# 1. Create org
-curl -X POST http://localhost:3000/orgs \
+# 1. Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@alertflow.com", "password": "Demouser123"}'
+
+# 2. Create org
+curl -X POST http://localhost:3000/api/orgs \
   -H "Content-Type: application/json" \
   -d '{"name": "Acme Corp"}'
-# → {"id": "org-uuid", "name": "Acme Corp", ...}
 
-# 2. Create user
-curl -X POST http://localhost:3000/users \
+# 3. Create user
+curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@acme.com", "orgId": "org-uuid"}'
-# → {"id": "user-uuid", ...}
 
-# 3. Create alert (tenant-scoped)
-curl -X POST http://localhost:3000/alerts \
+# 4. Create alert (with JWT + tenant headers)
+curl -X POST http://localhost:3000/api/alerts \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
   -H "X-Org-Id: org-uuid" \
   -H "X-User-Id: user-uuid" \
   -d '{"title": "DB CPU spike", "description": "Optional context"}'
 
-# 4. List alerts
-curl http://localhost:3000/alerts?status=NEW&limit=10&offset=0 \
-  -H "X-Org-Id: org-uuid" \
-  -H "X-User-Id: user-uuid"
-
 # 5. Acknowledge
-curl -X PATCH http://localhost:3000/alerts/alert-uuid/status \
+curl -X PATCH http://localhost:3000/api/alerts/alert-uuid/status \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
   -H "X-Org-Id: org-uuid" \
   -H "X-User-Id: user-uuid" \
-  -d '{"status": "ACKNOWLEDGED", "note": "Investigating now"}'
-
-# 6. Resolve
-curl -X PATCH http://localhost:3000/alerts/alert-uuid/status \
-  -H "Content-Type: application/json" \
-  -H "X-Org-Id: org-uuid" \
-  -H "X-User-Id: user-uuid" \
-  -d '{"status": "RESOLVED", "note": "Fixed — increased DB instance size"}'
-
-# 7. View audit trail
-curl http://localhost:3000/alerts/alert-uuid/events \
-  -H "X-Org-Id: org-uuid" \
-  -H "X-User-Id: user-uuid"
+  -d '{"status": "ACKNOWLEDGED", "note": "Investigating"}'
 ```
 
 ## Project Structure
 
 ```
-alerts-app/
-├── docker-compose.yml
-│
-├── backend/                          # NestJS API
+alertflow/
+├── backend/                    # NestJS API
 │   ├── src/
-│   │   ├── main.ts                   # Bootstrap, Swagger, global middleware
-│   │   ├── app.module.ts             # Root module
-│   │   ├── prisma/
-│   │   │   ├── prisma.service.ts     # PrismaClient singleton
-│   │   │   └── prisma.module.ts      # Global Prisma module
-│   │   ├── common/
-│   │   │   ├── guards/
-│   │   │   │   └── tenant.guard.ts   # 🔑 Core tenant isolation logic
-│   │   │   ├── decorators/
-│   │   │   │   └── tenant.decorator.ts # @OrgId() @UserId() param decorators
-│   │   │   ├── filters/
-│   │   │   │   └── http-exception.filter.ts # Global error handler
-│   │   │   ├── interceptors/
-│   │   │   │   └── logging.interceptor.ts   # Request logging
-│   │   │   └── dto/
-│   │   │       └── pagination.dto.ts
-│   │   ├── health/
+│   │   ├── main.ts             # Bootstrap, CORS, Swagger, global prefix
+│   │   ├── app.module.ts
+│   │   ├── auth/                # Login, JWT
 │   │   ├── orgs/
-│   │   │   ├── orgs.controller.ts
-│   │   │   ├── orgs.service.ts
-│   │   │   ├── orgs.module.ts
-│   │   │   └── dto/create-org.dto.ts
 │   │   ├── users/
-│   │   │   ├── users.controller.ts
-│   │   │   ├── users.service.ts
-│   │   │   ├── users.module.ts
-│   │   │   └── dto/create-user.dto.ts
-│   │   └── alerts/
-│   │       ├── alerts.controller.ts
-│   │       ├── alerts.service.ts    # Workflow transitions, tenant scoping
-│   │       ├── alerts.module.ts
-│   │       └── dto/alert.dto.ts
+│   │   ├── alerts/              # CRUD + WebSocket gateway
+│   │   ├── health/
+│   │   └── common/              # Guards, filters, interceptors
 │   ├── prisma/
-│   │   ├── schema.prisma            # DB schema with indexes
-│   │   └── migrations/              # SQL migrations
-│   ├── Dockerfile
-│   └── package.json
-│
-└── frontend/                         # React SPA
-    ├── src/
-    │   ├── main.tsx
-    │   ├── App.tsx
-    │   ├── types/index.ts            # Shared TypeScript types
-    │   ├── api/
-    │   │   ├── client.ts             # Axios + header injection
-    │   │   └── index.ts              # API functions
-    │   ├── store/
-    │   │   ├── index.ts              # Redux store
-    │   │   ├── hooks.ts              # Typed hooks
-    │   │   └── slices/
-    │   │       ├── authSlice.ts      # Org/user session
-    │   │       └── alertsSlice.ts    # Alerts state + async thunks
-    │   ├── pages/
-    │   │   ├── SetupPage.tsx         # Org + user creation flow
-    │   │   └── DashboardPage.tsx     # Main alerts dashboard
-    │   ├── components/
-    │   │   ├── AlertCard.tsx
-    │   │   ├── AlertDetailModal.tsx  # Events timeline
-    │   │   └── CreateAlertForm.tsx
-    │   └── utils/index.ts
-    ├── Dockerfile
-    └── package.json
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── scripts/
+│   │   └── create-admin.sql
+│   └── Dockerfile
+├── frontend/                    # React SPA
+│   ├── src/
+│   │   ├── app/                 # Router, AdminRoute
+│   │   ├── pages/               # Login, Alerts, Users, Organizations
+│   │   ├── components/
+│   │   ├── hooks/               # useAuth, useAlertsSocket
+│   │   ├── services/            # API client, auth, alerts
+│   │   └── store/               # Redux slices
+│   ├── nginx.conf               # Docker: proxy /api, /socket.io
+│   └── Dockerfile
+└── docker-compose.yml
 ```
 
 ## Database Schema
 
-```sql
+```
 organizations (id, name, created_at, updated_at)
-users         (id, email, name, org_id → organizations, ...)
-              INDEX: (org_id)
+users         (id, org_id, email, password, name, role, ...)
+              UNIQUE: email
 alerts        (id, title, description, status, org_id, created_by_id, ...)
-              INDEX: (org_id)          -- for list queries
-              INDEX: (org_id, status)  -- for filtered list queries
-              INDEX: (org_id, created_at DESC) -- for ordered list
+              INDEX: (org_id, status, updated_at DESC)
 alert_events  (id, alert_id, user_id, from_status, to_status, note, created_at)
-              INDEX: (alert_id)         -- for event lookup
-              INDEX: (alert_id, created_at ASC) -- for timeline ordering
+              INDEX: (alert_id)
 ```
 
 ## Config (env vars)
 
-| Variable       | Default                 | Description                  |
-| -------------- | ----------------------- | ---------------------------- |
-| `PORT`         | `3000`                  | API server port              |
-| `DATABASE_URL` | —                       | PostgreSQL connection string |
-| `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins     |
-| `NODE_ENV`     | `development`           | Environment                  |
-| `LOG_LEVEL`    | `debug`                 | Log verbosity                |
+| Variable         | Default                 | Description                  |
+| ---------------- | ----------------------- | ---------------------------- |
+| `PORT`           | `3000`                  | API server port              |
+| `DATABASE_URL`   | —                       | PostgreSQL connection string |
+| `PG_USER`        | `postgres`              | DB user (Docker)             |
+| `PG_PASSWORD`     | —                       | DB password (required)       |
+| `PG_DATABASE`    | `alert_workflow_db`     | DB name                      |
+| `JWT_SECRET`     | —                       | JWT signing secret           |
+| `CORS_ORIGINS`   | `http://localhost:5173` | Allowed frontend origins     |
+| `THROTTLE_TTL`   | `60000`                 | Rate limit window (ms)       |
+| `THROTTLE_LIMIT` | `100`                   | Requests per window          |
+| `WS_RATE_LIMIT_*`| —                       | WebSocket rate limiting      |
+| `VITE_API_BASE_URL` | —                    | Frontend: backend URL when serving separately |
 
-src/alerts/alerts.service.spec.ts
+## Tests
 
-create: Creates alert and initial event, emits gateway event
-findAll: Pagination, org filter, status filter, search, admin (no org)
-findOne: Returns alert, throws NotFoundException when missing
-updateStatus: NEW → ACKNOWLEDGED, invalid transition, version conflict, not found
-getEvents: Returns events, throws when alert not found
-
-src/alerts/alerts.controller.spec.ts
-
-create: Normal user with org, admin with dto.orgId, validation errors
-findAll: Org-scoped list, admin, validation
-findOne: Returns alert by id
-updateStatus: Delegates to service
-getEvents: Delegates to service
-
-Run tests
+```bash
 cd backend
-npm test # run once
-npm run test:watch # watch mode
-npm run test:cov # with coverage
+npm test
+npm run test:watch
+npm run test:cov
+```
 
-Run build
+## Build & Run (Production)
+
+```bash
+# Backend
 cd backend
-npm run build npm start
+npm run build
+npm run start
+
+# Frontend (built, served separately)
 cd frontend
-npm run build npm run serve
+npm run build
+npm run serve
+```
+
+On Ubuntu, if `serve` shows a clipboard error (`xsel`), the app still runs. Install `xsel` to fix it: `sudo apt install xsel`. Or use `npm run preview` instead.
