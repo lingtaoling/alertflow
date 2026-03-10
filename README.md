@@ -12,8 +12,8 @@ Demo: https://oaimu.com/ (Temporary domain, will be updated later)
 ## Architecture
 
 <p align="center">
-  <img src="docs/ER.png" width="45%" />
-  <img src="docs/UC.png" width="45%" />
+  <img src="docs/ER.png" width="30%" />
+  <img src="docs/UC.png" width="65%" />
 </p>
 
 ## Quick Start
@@ -113,10 +113,6 @@ ON CONFLICT (email) DO NOTHING;
 
 **Admin login:** `admin@alertflow.com` / `Demouser123`
 
-## API Reference
-
-All API routes use the `/api` prefix (except `/health`).
-
 ## UI Features
 
 - Create alert form
@@ -142,6 +138,10 @@ All API routes use the `/api` prefix (except `/health`).
 - Structured logging.
 - Env-based configuration management.
 - Unit tests.
+
+## API Reference
+
+All API routes use the `/api` prefix (except `/health`).
 
 ### Base URLs
 
