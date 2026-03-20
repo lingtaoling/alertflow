@@ -120,17 +120,38 @@ export default function CreateAlertForm({ onClose }: Props) {
           autoFocus
         />
       )}
-      <FormField
-        name="title"
-        label="Alert title"
-        type="text"
-        required
-        placeholder="..."
-        value={title}
-        onChange={setTitle}
-        autoFocus={!isAdmin}
-        maxLength={200}
-      />
+      <div>
+        <div className="flex items-end justify-between gap-3 mb-1.5">
+          <label className="label mb-0" htmlFor="title">
+            Alert title *
+          </label>
+          <button
+            type="button"
+            className="group shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-semibold normal-case tracking-normal
+              transition-all duration-300 ease-out
+              hover:scale-[1.04] hover:bg-gradient-to-r hover:from-violet-500/10 hover:via-fuchsia-500/10 hover:to-sky-500/10
+              active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-1"
+            onClick={() => {}}
+          >
+            <span
+              className="inline-block bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-[length:220%_auto] bg-clip-text text-transparent animate-gradient-flow drop-shadow-[0_0_10px_rgba(192,132,252,0.45)]"
+            >
+              AI Assistant
+            </span>
+          </button>
+        </div>
+        <input
+          className="input"
+          id="title"
+          name="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="..."
+          maxLength={200}
+          autoFocus={!isAdmin}
+        />
+      </div>
       <FormField
         name="description"
         label="Description"
