@@ -8,6 +8,8 @@ import {
   setSearchQuery,
 } from "../../../store/slices/alertsSlice";
 import { orgsApi } from "../../../services/organizations.service";
+import { aiApi } from "../../../services/ai.service";
+import { useAuth } from "../../../hooks/useAuth";
 import ModalForm from "../../../components/ui/ModalForm";
 import FormField from "../../../components/ui/FormField";
 import { validateText, validateUuid } from "../../../utils/formValidation";
@@ -23,11 +25,13 @@ export default function CreateAlertForm({ onClose }: Props) {
   const { createLoading, error, filterStatus, limit, offset, searchQuery } =
     useAppSelector((s) => s.alerts);
   const { orgId } = useAppSelector((s) => s.auth);
+  const { isAuthenticated } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [orgIdVal, setOrgIdVal] = useState(orgId ?? "");
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [localError, setLocalError] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const isAdmin = !orgId;
 
@@ -43,6 +47,35 @@ export default function CreateAlertForm({ onClose }: Props) {
   useEffect(() => {
     if (orgs.length > 0 && !orgIdVal) setOrgIdVal(orgs[0].id);
   }, [orgs, orgIdVal]);
+
+  const AI_MIN_WORDS_ERROR = "need more word to accurirate generage";
+
+  async function handleAiAssistant() {
+    setLocalError("");
+    if (!isAuthenticated) {
+      setLocalError("You must be signed in to use AI Assistant.");
+      return;
+    }
+    const draft = title.trim();
+    if (draft.length < 3) {
+      setLocalError(AI_MIN_WORDS_ERROR);
+      return;
+    }
+    if (draft.length > 200) {
+      setLocalError("Alert title must be at most 200 characters.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const result = await aiApi.suggestAlert(draft);
+      setTitle(result.title.slice(0, 200));
+      setDescription((result.description ?? "").slice(0, 2000));
+    } catch (e) {
+      setLocalError(e instanceof Error ? e.message : "AI request failed");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -127,15 +160,15 @@ export default function CreateAlertForm({ onClose }: Props) {
           </label>
           <button
             type="button"
+            disabled={aiLoading || createLoading}
             className="group shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-semibold normal-case tracking-normal
               transition-all duration-300 ease-out
               hover:scale-[1.04] hover:bg-gradient-to-r hover:from-violet-500/10 hover:via-fuchsia-500/10 hover:to-sky-500/10
-              active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-1"
-            onClick={() => {}}
+              active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-1
+              disabled:opacity-50 disabled:pointer-events-none"
+            onClick={() => void handleAiAssistant()}
           >
-            <span
-              className="inline-block bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-[length:220%_auto] bg-clip-text text-transparent animate-gradient-flow drop-shadow-[0_0_10px_rgba(192,132,252,0.45)]"
-            >
+            <span className="inline-block bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-[length:220%_auto] bg-clip-text text-transparent animate-gradient-flow drop-shadow-[0_0_10px_rgba(192,132,252,0.45)]">
               AI Assistant
             </span>
           </button>

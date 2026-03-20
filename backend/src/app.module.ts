@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { OrgsModule } from './orgs/orgs.module';
 import { UsersModule } from './users/users.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { AiModule } from './ai/ai.module';
 import { HealthModule } from './health/health.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
@@ -54,6 +55,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     OrgsModule,
     UsersModule,
     AlertsModule,
+    AiModule,
   ],
   providers: [
     {

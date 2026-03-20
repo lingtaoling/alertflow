@@ -69,7 +69,9 @@ apiClient.interceptors.response.use(
       store.dispatch(clearSession());
       window.location.href = '/login';
     }
-    const message = (err.response?.data as { message?: string })?.message || err.message || 'Unknown error';
+    const raw = (err.response?.data as { message?: string | string[] })?.message;
+    const message =
+      (Array.isArray(raw) ? raw[0] : raw) || err.message || 'Unknown error';
     return Promise.reject(new Error(message));
   },
 );
