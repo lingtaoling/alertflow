@@ -2,6 +2,10 @@ import { useState } from "react";
 import { aiApi } from "../../services/ai.service";
 import { useAuth } from "../../hooks/useAuth";
 
+const MIN_QUERY_CHARS = 10;
+const SHORT_QUERY_MESSAGE =
+  "More words are needed for an accurate analysis. Please enter at least 10 characters.";
+
 export default function AnalyticsPage() {
   const { isAuthenticated } = useAuth();
   const [aiQuery, setAiQuery] = useState("");
@@ -17,7 +21,10 @@ export default function AnalyticsPage() {
       return;
     }
     const draft = aiQuery.trim();
-    if (draft.length < 3) return;
+    if (draft.length < MIN_QUERY_CHARS) {
+      setError(SHORT_QUERY_MESSAGE);
+      return;
+    }
     setAiLoading(true);
     try {
       const result = await aiApi.analyticsQuery(draft);
@@ -42,7 +49,7 @@ export default function AnalyticsPage() {
           </label>
           <button
             type="button"
-            disabled={aiLoading || aiQuery.trim().length < 3}
+            disabled={aiLoading}
             className="group shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-semibold normal-case tracking-normal
               transition-all duration-300 ease-out
               hover:scale-[1.04] hover:bg-gradient-to-r hover:from-violet-500/10 hover:via-fuchsia-500/10 hover:to-sky-500/10
@@ -51,7 +58,7 @@ export default function AnalyticsPage() {
             onClick={handleAiAssistant}
           >
             <span className="inline-block bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-[length:220%_auto] bg-clip-text text-transparent animate-gradient-flow drop-shadow-[0_0_10px_rgba(192,132,252,0.45)]">
-              {aiLoading ? "Working…" : "AI Assistant"}
+              {aiLoading ? "Analyzing…" : "AI Assistant"}
             </span>
           </button>
         </div>
@@ -60,7 +67,10 @@ export default function AnalyticsPage() {
           id="analytics-ai-query"
           name="analyticsAiQuery"
           value={aiQuery}
-          onChange={(e) => setAiQuery(e.target.value)}
+          onChange={(e) => {
+            setAiQuery(e.target.value);
+            setError("");
+          }}
           placeholder="Describe what you want to analyze…"
           rows={4}
           maxLength={4000}
