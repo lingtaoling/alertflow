@@ -2,7 +2,9 @@ import apiClient from './api.client';
 
 export type SuggestAlertResponse = { title: string; description: string };
 
-export type AnalyticsQueryResponse = { answer: string };
+export type AnalyticsQueryResponse =
+  | { alertAnalytics: false }
+  | { alertAnalytics: true; answer: string };
 
 export const aiApi = {
   suggestAlert(titleDraft: string) {

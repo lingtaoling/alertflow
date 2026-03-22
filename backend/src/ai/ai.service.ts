@@ -78,17 +78,30 @@ Use professional tone.`;
     throw new BadGatewayException(lastErr);
   }
 
-  async answerAnalyticsQuery(query: string): Promise<{ answer: string }> {
+  async answerAnalyticsQuery(
+    query: string,
+  ): Promise<{ alertAnalytics: false } | { alertAnalytics: true; answer: string }> {
     const apiKey = this.getApiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('OpenAI API key is not configured');
     }
 
-    const system = `You are an alert and incident analytics assistant for operations teams.
-Help with interpreting alert patterns, metrics, SLAs, triage priorities, and operational best practices.
-If the question is vague, give practical general guidance grounded in common alerting practice.
-Respond with a single JSON object only, no markdown, with key:
-- "answer": string (full response; use \\n for paragraph breaks; max 8000 characters)`;
+    const system = `You help operations teams with alert and incident analytics only.
+
+First decide if the user's message is about alert analytics or closely related operational topics, for example:
+alerting systems, incident monitoring, on-call and escalation, noise reduction, alert routing and grouping, SLIs/SLOs and error budgets in an alerting context, triage, dashboards or metrics that support alert response, runbooks for alerts, or similar.
+
+If the message is NOT about these topics (e.g. unrelated trivia, personal chat, recipes, general coding homework with no alerting angle), respond with exactly this JSON and no other keys:
+{"alertAnalytics":false}
+
+When alertAnalytics is false: do not include "answer", profanity, insults, or any extra text outside the JSON.
+
+If the message IS on-topic, respond with:
+{"alertAnalytics":true,"answer":"<string>"}
+
+where "answer" is your helpful response (use \\n for paragraph breaks; max 8000 characters), professional tone, no profanity.
+
+Output a single JSON object only, no markdown fences.`;
 
     const user = `Question:\n${query}`;
 
@@ -101,12 +114,15 @@ Respond with a single JSON object only, no markdown, with key:
     for (const model of this.getModelChain()) {
       try {
         const raw = await this.chatCompletion(apiKey, model, messages);
-        const answer = this.parseAnswerJson(raw);
-        if (!answer.answer) {
+        const parsed = this.parseAnswerJson(raw);
+        if (!parsed.alertAnalytics) {
+          return { alertAnalytics: false };
+        }
+        if (!parsed.answer?.trim()) {
           lastErr = 'Model returned an empty answer';
           continue;
         }
-        return answer;
+        return { alertAnalytics: true, answer: parsed.answer };
       } catch (e) {
         lastErr = e instanceof Error ? e.message : String(e);
         if (!this.shouldTryNextModel(e)) break;
@@ -175,15 +191,27 @@ Respond with a single JSON object only, no markdown, with key:
     }
   }
 
-  private parseAnswerJson(text: string): { answer: string } {
+  private parseAnswerJson(
+    text: string,
+  ): { alertAnalytics: false } | { alertAnalytics: true; answer: string } {
     const trimmed = text.trim();
     const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
     const raw = (fence ? fence[1] : trimmed).trim();
     try {
-      const parsed = JSON.parse(raw) as { answer?: unknown };
+      const parsed = JSON.parse(raw) as { alertAnalytics?: unknown; answer?: unknown };
+      if (parsed.alertAnalytics !== true && parsed.alertAnalytics !== false) {
+        throw new Error('Model did not return alertAnalytics boolean');
+      }
+      if (parsed.alertAnalytics === false) {
+        return { alertAnalytics: false };
+      }
       const answer = (parsed.answer ?? '').toString().trim().slice(0, 8000);
-      return { answer };
-    } catch {
+      if (!answer) {
+        throw new Error('Model returned an empty answer');
+      }
+      return { alertAnalytics: true, answer };
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith('Model')) throw e;
       throw new Error('Model did not return valid JSON');
     }
   }

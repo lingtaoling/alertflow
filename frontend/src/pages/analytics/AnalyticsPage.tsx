@@ -5,6 +5,8 @@ import { useAuth } from "../../hooks/useAuth";
 const MIN_QUERY_CHARS = 10;
 const SHORT_QUERY_MESSAGE =
   "More words are needed for an accurate analysis. Please enter at least 10 characters.";
+const ONLY_ALERT_ANALYTICS_MESSAGE =
+  "Only alert analytics questions are allowed.";
 
 export default function AnalyticsPage() {
   const { isAuthenticated } = useAuth();
@@ -28,7 +30,11 @@ export default function AnalyticsPage() {
     setAiLoading(true);
     try {
       const result = await aiApi.analyticsQuery(draft);
-      setAiAnswer(result.answer ?? "");
+      if (!result.alertAnalytics) {
+        setError(ONLY_ALERT_ANALYTICS_MESSAGE);
+        return;
+      }
+      setAiAnswer(result.answer);
     } catch (e) {
       setError(e instanceof Error ? e.message : "AI request failed");
     } finally {
