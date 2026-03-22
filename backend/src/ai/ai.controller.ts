@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AiService } from './ai.service';
+import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 import { SuggestAlertDto } from './dto/suggest-alert.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrgRequiredGuard } from '../common/guards/org-required.guard';
@@ -19,5 +20,14 @@ export class AiController {
   })
   async suggestAlert(@Body() dto: SuggestAlertDto) {
     return this.aiService.suggestAlertContent(dto.title);
+  }
+
+  @Post('analytics/query')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Answer an analytics-style question about alerts (OpenAI; model fallback chain)',
+  })
+  async analyticsQuery(@Body() dto: AnalyticsQueryDto) {
+    return this.aiService.answerAnalyticsQuery(dto.query);
   }
 }

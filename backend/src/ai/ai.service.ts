@@ -78,6 +78,44 @@ Use professional tone.`;
     throw new BadGatewayException(lastErr);
   }
 
+  async answerAnalyticsQuery(query: string): Promise<{ answer: string }> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException('OpenAI API key is not configured');
+    }
+
+    const system = `You are an alert and incident analytics assistant for operations teams.
+Help with interpreting alert patterns, metrics, SLAs, triage priorities, and operational best practices.
+If the question is vague, give practical general guidance grounded in common alerting practice.
+Respond with a single JSON object only, no markdown, with key:
+- "answer": string (full response; use \\n for paragraph breaks; max 8000 characters)`;
+
+    const user = `Question:\n${query}`;
+
+    const messages: ChatMessage[] = [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ];
+
+    let lastErr = 'All models failed';
+    for (const model of this.getModelChain()) {
+      try {
+        const raw = await this.chatCompletion(apiKey, model, messages);
+        const answer = this.parseAnswerJson(raw);
+        if (!answer.answer) {
+          lastErr = 'Model returned an empty answer';
+          continue;
+        }
+        return answer;
+      } catch (e) {
+        lastErr = e instanceof Error ? e.message : String(e);
+        if (!this.shouldTryNextModel(e)) break;
+      }
+    }
+
+    throw new BadGatewayException(lastErr);
+  }
+
   private shouldTryNextModel(err: unknown): boolean {
     const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
     return (
@@ -132,6 +170,19 @@ Use professional tone.`;
     const raw = (fence ? fence[1] : trimmed).trim();
     try {
       return JSON.parse(raw) as { title?: string; description?: string };
+    } catch {
+      throw new Error('Model did not return valid JSON');
+    }
+  }
+
+  private parseAnswerJson(text: string): { answer: string } {
+    const trimmed = text.trim();
+    const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const raw = (fence ? fence[1] : trimmed).trim();
+    try {
+      const parsed = JSON.parse(raw) as { answer?: unknown };
+      const answer = (parsed.answer ?? '').toString().trim().slice(0, 8000);
+      return { answer };
     } catch {
       throw new Error('Model did not return valid JSON');
     }

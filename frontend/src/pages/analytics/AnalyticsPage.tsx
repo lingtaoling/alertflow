@@ -1,17 +1,32 @@
 import { useState } from "react";
+import { aiApi } from "../../services/ai.service";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function AnalyticsPage() {
+  const { isAuthenticated } = useAuth();
   const [aiQuery, setAiQuery] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState("");
+  const [error, setError] = useState("");
 
-  function handleAiAssistant() {
+  async function handleAiAssistant() {
+    setError("");
+    setAiAnswer("");
+    if (!isAuthenticated) {
+      setError("You must be signed in to use AI Assistant.");
+      return;
+    }
     const draft = aiQuery.trim();
     if (draft.length < 3) return;
     setAiLoading(true);
-    // Frontend-only placeholder — replace with API call when backend is ready
-    window.setTimeout(() => {
+    try {
+      const result = await aiApi.analyticsQuery(draft);
+      setAiAnswer(result.answer ?? "");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "AI request failed");
+    } finally {
       setAiLoading(false);
-    }, 800);
+    }
   }
 
   return (
@@ -23,7 +38,7 @@ export default function AnalyticsPage() {
       <div className="mt-1 w-full min-w-0">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-3 mb-1.5">
           <label className="label mb-0" htmlFor="analytics-ai-query">
-            Ask AI related to analytics of alerts
+            AI-powered alert analytics
           </label>
           <button
             type="button"
@@ -52,6 +67,21 @@ export default function AnalyticsPage() {
           disabled={aiLoading}
           aria-busy={aiLoading}
         />
+        {error && (
+          <p className="mt-3 text-sm text-signal-red" role="alert">
+            {error}
+          </p>
+        )}
+        {aiAnswer && !aiLoading && (
+          <div className="mt-4 rounded-lg border border-ink-200 bg-ink-50/80 p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-2">
+              Answer
+            </h2>
+            <div className="text-ink-800 text-base whitespace-pre-wrap break-words">
+              {aiAnswer}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
