@@ -1,0 +1,58 @@
+import { useState } from "react";
+
+export default function AnalyticsPage() {
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  function handleAiAssistant() {
+    const draft = aiQuery.trim();
+    if (draft.length < 3) return;
+    setAiLoading(true);
+    // Frontend-only placeholder — replace with API call when backend is ready
+    window.setTimeout(() => {
+      setAiLoading(false);
+    }, 800);
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto px-4 py-6 sm:px-6">
+      <h1 className="text-2xl font-semibold text-ink-800 tracking-tight">
+        Analytics
+      </h1>
+
+      <div className="mt-1 w-full min-w-0">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-3 mb-1.5">
+          <label className="label mb-0" htmlFor="analytics-ai-query">
+            Ask AI related to analytics of alerts
+          </label>
+          <button
+            type="button"
+            disabled={aiLoading || aiQuery.trim().length < 3}
+            className="group shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-semibold normal-case tracking-normal
+              transition-all duration-300 ease-out
+              hover:scale-[1.04] hover:bg-gradient-to-r hover:from-violet-500/10 hover:via-fuchsia-500/10 hover:to-sky-500/10
+              active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-1
+              disabled:opacity-50 disabled:pointer-events-none"
+            onClick={handleAiAssistant}
+          >
+            <span className="inline-block bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 bg-[length:220%_auto] bg-clip-text text-transparent animate-gradient-flow drop-shadow-[0_0_10px_rgba(192,132,252,0.45)]">
+              {aiLoading ? "Working…" : "AI Assistant"}
+            </span>
+          </button>
+        </div>
+        <textarea
+          className="input resize-none w-full min-w-0"
+          id="analytics-ai-query"
+          name="analyticsAiQuery"
+          value={aiQuery}
+          onChange={(e) => setAiQuery(e.target.value)}
+          placeholder="Describe what you want to analyze…"
+          rows={4}
+          maxLength={4000}
+          disabled={aiLoading}
+          aria-busy={aiLoading}
+        />
+      </div>
+    </div>
+  );
+}

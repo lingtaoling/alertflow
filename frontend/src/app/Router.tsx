@@ -4,6 +4,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import AdminRoute from "./AdminRoute";
 import LoginPage from "../pages/login";
 import AlertsPage from "../pages/alerts";
+import AnalyticsPage from "../pages/analytics";
 import UsersPage from "../pages/users";
 import OrganizationsPage from "../pages/organizations";
 
@@ -17,6 +18,7 @@ export default function Router() {
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Navigate to={defaultRoute} replace />} />
           <Route path="alerts" element={<AlertsPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
           <Route
             path="users"
             element={
