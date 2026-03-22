@@ -1,0 +1,17 @@
+<svg width="100%" viewBox="0 0 680 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-14px); }
+      }
+      .ball-1 { animation: bounce 0.9s ease-in-out infinite; }
+      .ball-2 { animation: bounce 0.9s ease-in-out 0.15s infinite; }
+      .ball-3 { animation: bounce 0.9s ease-in-out 0.3s infinite; }
+    </style>
+  </defs>
+
+  <circle class="ball-1" cx="316" cy="68" r="5" fill="#D85A30"/>
+  <circle class="ball-2" cx="331" cy="68" r="5" fill="#D85A30"/>
+  <circle class="ball-3" cx="346" cy="68" r="5" fill="#D85A30"/>
+</svg>

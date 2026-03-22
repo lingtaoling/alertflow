@@ -1,4 +1,11 @@
-export type FormFieldType = "text" | "textarea" | "password" | "email" | "select";
+import aiLoadingSvg from "../../assets/images/aI-loading.svg";
+
+export type FormFieldType =
+  | "text"
+  | "textarea"
+  | "password"
+  | "email"
+  | "select";
 
 export interface FormFieldConfig {
   name: string;
@@ -11,6 +18,10 @@ export interface FormFieldConfig {
   rows?: number;
   minLength?: number;
   options?: { value: string; label: string }[];
+  /** Disables the control (e.g. while a dependent action is in progress). */
+  disabled?: boolean;
+  /** Shows a loading overlay on the field (implies disabled while true). */
+  loading?: boolean;
 }
 
 export interface FormFieldProps extends FormFieldConfig {
@@ -37,6 +48,8 @@ export default function FormField({
   value,
   onChange,
   autoFocus,
+  disabled = false,
+  loading = false,
 }: FormFieldProps) {
   const labelContent = (
     <>
@@ -48,25 +61,45 @@ export default function FormField({
     </>
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    onChange(e.target.value);
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => onChange(e.target.value);
 
   if (type === "textarea") {
+    const fieldBusy = loading;
     return (
       <div>
         <label className="label" htmlFor={name}>
           {labelContent}
         </label>
-        <textarea
-          className="input resize-none"
-          id={name}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          rows={rows}
-          autoFocus={autoFocus}
-        />
+        <div className="relative">
+          <textarea
+            className="input resize-none"
+            id={name}
+            value={value}
+            onChange={handleChange}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            rows={rows}
+            autoFocus={autoFocus}
+            disabled={disabled || loading}
+            aria-busy={fieldBusy}
+          />
+          {loading && (
+            <div
+              className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/75 backdrop-blur-[1px] pointer-events-none"
+              aria-hidden
+            >
+              <img
+                src={aiLoadingSvg}
+                alt=""
+                className="h-16 w-auto max-w-[min(100%,18rem)] object-contain"
+              />
+            </div>
+          )}
+        </div>
       </div>
     );
   }

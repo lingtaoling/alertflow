@@ -15,6 +15,7 @@ import FormField from "../../../components/ui/FormField";
 import { validateText, validateUuid } from "../../../utils/formValidation";
 import { Plus, Zap } from "lucide-react";
 import { Organization } from "../../../types";
+import aiLoadingSvg from "../../../assets/images/aI-loading.svg";
 
 interface Props {
   onClose: () => void;
@@ -173,28 +174,46 @@ export default function CreateAlertForm({ onClose }: Props) {
             </span>
           </button>
         </div>
-        <input
-          className="input"
-          id="title"
-          name="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="..."
-          maxLength={200}
-          autoFocus={!isAdmin}
-        />
+        <div className="relative">
+          <input
+            className="input"
+            id="title"
+            name="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder=""
+            maxLength={200}
+            autoFocus={!isAdmin}
+            disabled={aiLoading || createLoading}
+            aria-busy={aiLoading}
+          />
+          {aiLoading && (
+            <div
+              className="absolute inset-0 flex items-center justify-center pl-3.5 rounded-lg bg-white/75 backdrop-blur-[1px] pointer-events-none"
+              aria-hidden
+            >
+              <img
+                src={aiLoadingSvg}
+                alt=""
+                className="h-16 w-auto max-w-[min(100%,18rem)] object-contain"
+              />
+            </div>
+          )}
+        </div>
       </div>
       <FormField
         name="description"
         label="Description"
         type="textarea"
         optional
-        placeholder="..."
+        placeholder=""
         value={description}
         onChange={setDescription}
         rows={3}
         maxLength={2000}
+        loading={aiLoading}
+        disabled={createLoading}
       />
     </ModalForm>
   );
